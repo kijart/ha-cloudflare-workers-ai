@@ -56,6 +56,15 @@ class CloudflareTTSEntity(CloudflareWorkersAIEntity, TextToSpeechEntity):
         return str(self._entry.options.get(CONF_TTS_MODEL, DEFAULT_TTS_MODEL))
 
     @property
+    def _voice(self) -> str:
+        return str(self._entry.options.get(CONF_TTS_VOICE, DEFAULT_TTS_VOICE))
+
+    @property
+    def default_options(self) -> dict[str, Any]:
+        """Return the configured voice as the default option."""
+        return {ATTR_VOICE: self._voice}
+
+    @property
     def default_language(self) -> str:
         """Return the language of the configured Aura model."""
         return tts_language(self._model) or _FALLBACK_LANGUAGE
@@ -86,9 +95,7 @@ class CloudflareTTSEntity(CloudflareWorkersAIEntity, TextToSpeechEntity):
                 translation_key="message_too_long",
                 translation_placeholders={"max_length": str(MAX_TTS_CHARS)},
             )
-        voice = options.get(ATTR_VOICE) or self._entry.options.get(
-            CONF_TTS_VOICE, DEFAULT_TTS_VOICE
-        )
+        voice = options.get(ATTR_VOICE) or self._voice
         data = self._entry.runtime_data
         try:
             audio, content_type = await data.client.run_binary(

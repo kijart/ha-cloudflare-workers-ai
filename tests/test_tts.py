@@ -14,11 +14,13 @@ from custom_components.cloudflare_workers_ai.const import (
     CONF_TTS_MODEL,
     CONF_TTS_VOICE,
     DEFAULT_TTS_MODEL,
+    DEFAULT_TTS_VOICE,
     DOMAIN,
     MAX_TTS_CHARS,
 )
 from custom_components.cloudflare_workers_ai.models import FALLBACK_AURA_2_ES_VOICES
 from homeassistant.components.tts import ATTR_VOICE, DATA_COMPONENT, Voice
+from homeassistant.components.tts.const import DATA_TTS_MANAGER
 from homeassistant.components.tts.entity import TextToSpeechEntity
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
@@ -274,3 +276,33 @@ async def test_tts_entity_metadata(
     assert device is not None
     assert device.manufacturer == "Cloudflare"
     assert device.entry_type is DeviceEntryType.SERVICE
+
+
+async def test_tts_default_options_follow_configured_voice(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+) -> None:
+    """The configured voice is part of the options Home Assistant caches by."""
+    entity = await _setup(hass, mock_config_entry, {CONF_TTS_VOICE: "javier"})
+    manager = hass.data[DATA_TTS_MANAGER]
+    _, javier = manager.process_options(entity, None, None)
+    hass.config_entries.async_update_entry(
+        mock_config_entry, options={CONF_TTS_VOICE: "diana"}
+    )
+    _, diana = manager.process_options(entity, None, None)
+    assert javier == {ATTR_VOICE: "javier"}
+    assert diana == {ATTR_VOICE: "diana"}
+    assert manager.process_options(entity, None, {ATTR_VOICE: "sirio"})[1] == {
+        ATTR_VOICE: "sirio"
+    }
+
+
+async def test_tts_default_options_use_default_voice(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+) -> None:
+    """Without a configured voice the default voice is the default option."""
+    entity = await _setup(hass, mock_config_entry)
+    assert entity.default_options == {ATTR_VOICE: DEFAULT_TTS_VOICE}
