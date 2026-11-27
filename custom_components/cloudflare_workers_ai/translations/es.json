@@ -86,10 +86,14 @@
   },
   "entity": {
     "stt": {
-      "name": "Voz a texto"
+      "stt": {
+        "name": "Voz a texto"
+      }
     },
     "tts": {
-      "name": "Texto a voz"
+      "tts": {
+        "name": "Texto a voz"
+      }
     }
   },
   "exceptions": {

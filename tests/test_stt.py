@@ -252,6 +252,8 @@ async def test_stt_entity_metadata(
     registry_entry = er.async_get(hass).async_get(entity.entity_id)
     assert registry_entry is not None
     assert registry_entry.translation_key == "stt"
+    assert entity.name == "Speech-to-text"
+    assert entity.entity_id == "stt.cloudflare_workers_ai_speech_to_text"
 
 
 def load_fixture(name: str) -> Any:

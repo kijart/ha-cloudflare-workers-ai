@@ -4,6 +4,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -20,7 +21,12 @@ from custom_components.cloudflare_workers_ai.const import (
     MAX_TTS_CHARS,
 )
 from custom_components.cloudflare_workers_ai.models import FALLBACK_AURA_2_ES_VOICES
-from homeassistant.components.tts import ATTR_VOICE, DATA_COMPONENT, Voice
+from homeassistant.components.tts import (
+    ATTR_VOICE,
+    DATA_COMPONENT,
+    Voice,
+    async_create_stream,
+)
 from homeassistant.components.tts.const import DATA_TTS_MANAGER
 from homeassistant.components.tts.entity import TextToSpeechEntity
 from homeassistant.config_entries import ConfigEntryState
@@ -42,6 +48,16 @@ QUOTA_BODY = {
 
 def load_fixture(name: str) -> Any:
     return json.loads((FIXTURES / name).read_text())
+
+
+@pytest.fixture(autouse=True)
+def tts_cache_dir(tmp_path: Path) -> Any:
+    """Keep the TTS file cache out of the shared test config folder."""
+    with patch(
+        "homeassistant.components.tts._init_tts_cache_dir",
+        return_value=str(tmp_path),
+    ):
+        yield tmp_path
 
 
 async def _setup(
@@ -78,6 +94,21 @@ async def test_tts_returns_mp3_with_selected_voice(
     result = await entity.async_get_tts_audio("Hola", "es", {})
     assert _last_body(mock_cloudflare) == {"text": "Hola", "speaker": "javier"}
     assert result == ("mp3", b"ID3fake")
+
+
+async def test_tts_through_home_assistant_manager(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+) -> None:
+    """Assist's path (TTS manager, not the entity directly) returns the MP3."""
+    entity = await _setup(hass, mock_config_entry)
+    mock_cloudflare.post(RUN_URL, content=b"ID3fake", headers=MP3)
+    stream = async_create_stream(hass, entity.entity_id, language="es")
+    stream.async_set_message("Hola")
+    audio = b"".join([chunk async for chunk in stream.async_stream_result()])
+    assert audio == b"ID3fake"
+    assert _last_body(mock_cloudflare) == {"text": "Hola", "speaker": "aquila"}
 
 
 async def test_tts_defaults_to_aquila(
@@ -272,6 +303,10 @@ async def test_tts_entity_metadata(
     registry_entry = er.async_get(hass).async_get(entity.entity_id)
     assert registry_entry is not None
     assert registry_entry.translation_key == "tts"
+    # The TTS manager refuses engines without a name, so the translated name
+    # must resolve (regression: a wrong strings.json shape left it as None).
+    assert entity.name == "Text-to-speech"
+    assert entity.entity_id == "tts.cloudflare_workers_ai_text_to_speech"
     device = dr.async_get(hass).async_get_device_by_identifier(
         (DOMAIN, mock_config_entry.entry_id), mock_config_entry.entry_id
     )
