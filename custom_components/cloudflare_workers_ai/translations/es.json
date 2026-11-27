@@ -102,5 +102,11 @@
     "tts_failed": {
       "message": "Falló la síntesis de voz. Consultar los registros para más detalles."
     }
+  },
+  "issues": {
+    "model_unavailable": {
+      "title": "El modelo configurado ya no está disponible",
+      "description": "Cloudflare ya no ofrece el modelo {model}. Elegir otro modelo en las opciones de la integración Cloudflare Workers AI."
+    }
   }
 }

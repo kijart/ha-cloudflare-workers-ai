@@ -102,5 +102,11 @@
     "tts_failed": {
       "message": "Text-to-speech failed. Check the logs for details."
     }
+  },
+  "issues": {
+    "model_unavailable": {
+      "title": "Configured model is no longer available",
+      "description": "The model {model} is no longer offered by Cloudflare. Choose another model in the options of the Cloudflare Workers AI integration."
+    }
   }
 }

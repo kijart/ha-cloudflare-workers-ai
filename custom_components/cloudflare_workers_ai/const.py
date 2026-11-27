@@ -15,6 +15,8 @@ DEFAULT_STT_MODEL = "@cf/openai/whisper-large-v3-turbo"
 DEFAULT_TTS_MODEL = "@cf/deepgram/aura-2-es"
 DEFAULT_TTS_VOICE = "aquila"
 
+ISSUE_MODEL_UNAVAILABLE = "model_unavailable"
+
 API_BASE = "https://api.cloudflare.com/client/v4"
 GATEWAY_BASE = "https://gateway.ai.cloudflare.com/v1"
 

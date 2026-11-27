@@ -9,6 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_TOKEN, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import (
@@ -21,11 +22,18 @@ from .const import (
     CONF_ACCOUNT_ID,
     CONF_GATEWAY_ID,
     CONF_GATEWAY_TOKEN,
+    CONF_STT_MODEL,
+    CONF_TTS_MODEL,
     CONF_USE_GATEWAY,
+    DEFAULT_STT_MODEL,
+    DEFAULT_TTS_MODEL,
+    DOMAIN,
+    ISSUE_MODEL_UNAVAILABLE,
 )
 from .models import ModelCatalog, async_discover
 
 PLATFORMS: list[Platform] = [Platform.STT, Platform.TTS]
+ISSUE_KEYS = ("stt", "tts")
 
 
 @dataclass
@@ -52,6 +60,46 @@ def build_client(hass: HomeAssistant, data: Mapping[str, Any]) -> CloudflareClie
     )
 
 
+def _issue_id(entry: ConfigEntry, key: str) -> str:
+    return f"{ISSUE_MODEL_UNAVAILABLE}_{key}_{entry.entry_id}"
+
+
+def _update_model_issues(
+    hass: HomeAssistant, entry: CloudflareWorkersAIConfigEntry
+) -> None:
+    """Create or delete repair issues for models missing from the catalog.
+
+    A fallback catalog cannot tell whether a model is retired, so issues are
+    left untouched in that case.
+    """
+    catalog = entry.runtime_data.catalog
+    if not catalog.discovered:
+        return
+    configured = {
+        "stt": (
+            entry.options.get(CONF_STT_MODEL, DEFAULT_STT_MODEL),
+            catalog.stt_models,
+        ),
+        "tts": (
+            entry.options.get(CONF_TTS_MODEL, DEFAULT_TTS_MODEL),
+            catalog.tts_models,
+        ),
+    }
+    for key, (model, available) in configured.items():
+        if model in available:
+            ir.async_delete_issue(hass, DOMAIN, _issue_id(entry, key))
+            continue
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            _issue_id(entry, key),
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key=ISSUE_MODEL_UNAVAILABLE,
+            translation_placeholders={"model": model},
+        )
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: CloudflareWorkersAIConfigEntry
 ) -> bool:
@@ -67,8 +115,17 @@ async def async_setup_entry(
     entry.runtime_data = CloudflareWorkersAIData(
         client=client, catalog=await async_discover(client)
     )
+    _update_model_issues(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+async def async_remove_entry(
+    hass: HomeAssistant, entry: CloudflareWorkersAIConfigEntry
+) -> None:
+    """Delete the repair issues of a removed config entry."""
+    for key in ISSUE_KEYS:
+        ir.async_delete_issue(hass, DOMAIN, _issue_id(entry, key))
 
 
 async def async_unload_entry(
