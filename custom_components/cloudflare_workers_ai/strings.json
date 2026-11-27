@@ -18,6 +18,34 @@
           "gateway_id": "Name of the AI Gateway. Required when AI Gateway is enabled.",
           "gateway_token": "Token for an authenticated AI Gateway. Leave empty for a gateway without authentication."
         }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate Cloudflare Workers AI",
+        "description": "The API token for account {account_id} was rejected. Enter a new API token.",
+        "data": {
+          "api_token": "API token"
+        },
+        "data_description": {
+          "api_token": "Cloudflare API token with Workers AI permissions."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure Cloudflare Workers AI",
+        "description": "Update the API token and AI Gateway settings. The account ID must remain the same.",
+        "data": {
+          "account_id": "Account ID",
+          "api_token": "API token",
+          "use_gateway": "Use AI Gateway",
+          "gateway_id": "Gateway ID",
+          "gateway_token": "Gateway token"
+        },
+        "data_description": {
+          "account_id": "Cloudflare account ID, shown in the Cloudflare dashboard.",
+          "api_token": "Cloudflare API token with Workers AI permissions.",
+          "use_gateway": "Route requests through Cloudflare AI Gateway.",
+          "gateway_id": "Name of the AI Gateway. Required when AI Gateway is enabled.",
+          "gateway_token": "Token for an authenticated AI Gateway. Leave empty for a gateway without authentication."
+        }
       }
     },
     "error": {
@@ -27,7 +55,10 @@
       "unknown": "Unexpected error."
     },
     "abort": {
-      "already_configured": "This Cloudflare account is already configured."
+      "already_configured": "This Cloudflare account is already configured.",
+      "reauth_successful": "Reauthentication completed successfully.",
+      "reconfigure_successful": "Reconfiguration completed successfully.",
+      "wrong_account": "The account ID must match the one already configured."
     }
   }
 }

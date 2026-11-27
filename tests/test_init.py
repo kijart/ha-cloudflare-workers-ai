@@ -8,7 +8,7 @@ from unittest.mock import patch
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
-from custom_components.cloudflare_workers_ai import build_client, config_flow
+from custom_components.cloudflare_workers_ai import build_client
 from custom_components.cloudflare_workers_ai.const import (
     API_BASE,
     CONF_ACCOUNT_ID,
@@ -53,7 +53,6 @@ async def test_setup_auth_failure_starts_reauth(
 ) -> None:
     """A rejected token puts the entry in setup error and starts reauth."""
     aioclient_mock.get(VERIFY_URL, status=401, json=load_fixture("error_auth.json"))
-    assert config_flow.CloudflareWorkersAIConfigFlow.async_step_reauth
     mock_config_entry.add_to_hass(hass)
     with patch(PLATFORMS, []):
         await hass.config_entries.async_setup(mock_config_entry.entry_id)

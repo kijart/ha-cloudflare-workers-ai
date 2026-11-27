@@ -120,3 +120,104 @@ async def test_user_flow_aborts_if_account_already_configured(
     result = await hass.config_entries.flow.async_configure(flow_id, USER_INPUT)
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "already_configured"
+
+
+async def test_reauth_updates_token(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+) -> None:
+    """A valid new token is stored and the entry reloads."""
+    mock_config_entry.add_to_hass(hass)
+    result = await mock_config_entry.start_reauth_flow(hass)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reauth_confirm"
+    with patch(SETUP, return_value=True):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_API_TOKEN: "new-api-token-secret"}
+        )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reauth_successful"
+    assert mock_config_entry.data[CONF_API_TOKEN] == "new-api-token-secret"
+
+
+@pytest.mark.parametrize(
+    ("exc", "error"),
+    [
+        (CloudflareAuthError, "invalid_auth"),
+        (CloudflareConnectionError, "cannot_connect"),
+        (Exception, "unknown"),
+    ],
+)
+async def test_reauth_errors(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+    exc: type[Exception],
+    error: str,
+) -> None:
+    """Verification errors are shown on the reauth form."""
+    mock_config_entry.add_to_hass(hass)
+    result = await mock_config_entry.start_reauth_flow(hass)
+    with patch(VERIFY, side_effect=exc("boom")):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_API_TOKEN: "new-api-token-secret"}
+        )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": error}
+    assert mock_config_entry.data[CONF_API_TOKEN] != "new-api-token-secret"
+
+
+async def test_reconfigure_changes_token_and_gateway(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+) -> None:
+    """Token and gateway settings are updated for the same account."""
+    mock_config_entry.add_to_hass(hass)
+    result = await mock_config_entry.start_reconfigure_flow(hass)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+    data = {
+        **USER_INPUT,
+        CONF_API_TOKEN: "new-api-token-secret",
+        CONF_USE_GATEWAY: True,
+        CONF_GATEWAY_ID: "gw",
+    }
+    with patch(SETUP, return_value=True):
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], data)
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert mock_config_entry.data == data
+
+
+async def test_reconfigure_error_then_gateway_required(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+) -> None:
+    """Validation errors are shown on the reconfigure form."""
+    mock_config_entry.add_to_hass(hass)
+    result = await mock_config_entry.start_reconfigure_flow(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {**USER_INPUT, CONF_USE_GATEWAY: True}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {"base": "gateway_id_required"}
+
+
+async def test_reconfigure_other_account_aborts(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+) -> None:
+    """Changing the account ID aborts and leaves the entry untouched."""
+    mock_config_entry.add_to_hass(hass)
+    original = dict(mock_config_entry.data)
+    result = await mock_config_entry.start_reconfigure_flow(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {**USER_INPUT, CONF_ACCOUNT_ID: "other"}
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "wrong_account"
+    assert dict(mock_config_entry.data) == original

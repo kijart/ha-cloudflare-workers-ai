@@ -18,6 +18,34 @@
           "gateway_id": "Nombre del AI Gateway. Obligatorio cuando AI Gateway está activado.",
           "gateway_token": "Token de un AI Gateway con autenticación. Se deja vacío para un gateway sin autenticación."
         }
+      },
+      "reauth_confirm": {
+        "title": "Reautenticar Cloudflare Workers AI",
+        "description": "Se rechazó el token de API de la cuenta {account_id}. Introducir un nuevo token de API.",
+        "data": {
+          "api_token": "Token de API"
+        },
+        "data_description": {
+          "api_token": "Token de API de Cloudflare con permisos de Workers AI."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar Cloudflare Workers AI",
+        "description": "Actualizar el token de API y los ajustes de AI Gateway. El ID de cuenta debe seguir siendo el mismo.",
+        "data": {
+          "account_id": "ID de cuenta",
+          "api_token": "Token de API",
+          "use_gateway": "Usar AI Gateway",
+          "gateway_id": "ID del gateway",
+          "gateway_token": "Token del gateway"
+        },
+        "data_description": {
+          "account_id": "ID de la cuenta de Cloudflare, visible en el panel de Cloudflare.",
+          "api_token": "Token de API de Cloudflare con permisos de Workers AI.",
+          "use_gateway": "Enviar las peticiones a través de Cloudflare AI Gateway.",
+          "gateway_id": "Nombre del AI Gateway. Obligatorio cuando AI Gateway está activado.",
+          "gateway_token": "Token de un AI Gateway con autenticación. Se deja vacío para un gateway sin autenticación."
+        }
       }
     },
     "error": {
@@ -27,7 +55,10 @@
       "unknown": "Error inesperado."
     },
     "abort": {
-      "already_configured": "Esta cuenta de Cloudflare ya está configurada."
+      "already_configured": "Esta cuenta de Cloudflare ya está configurada.",
+      "reauth_successful": "Reautenticación completada correctamente.",
+      "reconfigure_successful": "Reconfiguración completada correctamente.",
+      "wrong_account": "El ID de cuenta debe coincidir con el ya configurado."
     }
   }
 }
