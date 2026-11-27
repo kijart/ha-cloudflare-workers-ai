@@ -87,6 +87,20 @@
   "entity": {
     "stt": {
       "name": "Speech-to-text"
+    },
+    "tts": {
+      "name": "Text-to-speech"
+    }
+  },
+  "exceptions": {
+    "quota_exceeded": {
+      "message": "The Cloudflare Workers AI daily quota is exhausted. Requests resume when it resets."
+    },
+    "message_too_long": {
+      "message": "The text exceeds the maximum length of {max_length} characters."
+    },
+    "tts_failed": {
+      "message": "Text-to-speech failed. Check the logs for details."
     }
   }
 }

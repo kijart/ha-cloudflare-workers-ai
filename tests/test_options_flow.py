@@ -30,7 +30,6 @@ FIXTURES = Path(__file__).parent / "fixtures"
 VERIFY_URL = f"{API_BASE}/accounts/acc/tokens/verify"
 SEARCH_URL = f"{API_BASE}/accounts/acc/ai/models/search"
 DISCOVER = "custom_components.cloudflare_workers_ai.config_flow.async_discover"
-PLATFORMS = "custom_components.cloudflare_workers_ai.PLATFORMS"
 OPTIONS = {
     CONF_STT_MODEL: DEFAULT_STT_MODEL,
     CONF_STT_PROMPT: "Home Assistant, Cloudflare",
@@ -60,8 +59,7 @@ async def test_options_lists_discovered_models_and_voices(
     mock_cloudflare: AiohttpClientMocker,
 ) -> None:
     """Selectors offer the discovered models and voices."""
-    with patch(PLATFORMS, []):
-        result = await _open(hass, mock_config_entry)
+    result = await _open(hass, mock_config_entry)
     assert result["type"] is FlowResultType.FORM
     assert "@cf/openai/whisper-large-v3-turbo" in _choices(result, CONF_STT_MODEL)
     assert "@cf/deepgram/aura-2-es" in _choices(result, CONF_TTS_MODEL)
@@ -74,17 +72,16 @@ async def test_options_saves_and_reloads(
     mock_cloudflare: AiohttpClientMocker,
 ) -> None:
     """Saving stores the options and reloads the entry."""
-    with patch(PLATFORMS, []):
-        result = await _open(hass, mock_config_entry)
-        old_runtime_data = mock_config_entry.runtime_data
-        result = await hass.config_entries.options.async_configure(
-            result["flow_id"], OPTIONS
-        )
-        await hass.async_block_till_done()
-        assert result["type"] is FlowResultType.CREATE_ENTRY
-        assert mock_config_entry.options == OPTIONS
-        assert mock_config_entry.state is ConfigEntryState.LOADED
-        assert mock_config_entry.runtime_data is not old_runtime_data
+    result = await _open(hass, mock_config_entry)
+    old_runtime_data = mock_config_entry.runtime_data
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], OPTIONS
+    )
+    await hass.async_block_till_done()
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert mock_config_entry.options == OPTIONS
+    assert mock_config_entry.state is ConfigEntryState.LOADED
+    assert mock_config_entry.runtime_data is not old_runtime_data
 
 
 async def test_options_saves_empty_prompt_as_empty_string(
@@ -94,11 +91,10 @@ async def test_options_saves_empty_prompt_as_empty_string(
 ) -> None:
     """An omitted prompt is stored as an empty string."""
     user_input = {k: v for k, v in OPTIONS.items() if k != CONF_STT_PROMPT}
-    with patch(PLATFORMS, []):
-        result = await _open(hass, mock_config_entry)
-        result = await hass.config_entries.options.async_configure(
-            result["flow_id"], user_input
-        )
+    result = await _open(hass, mock_config_entry)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input
+    )
     assert mock_config_entry.options[CONF_STT_PROMPT] == ""
 
 
@@ -113,14 +109,13 @@ async def test_options_works_when_discovery_fails(
     )
     for task in (TASK_ASR, TASK_TTS):
         aioclient_mock.get(f"{SEARCH_URL}?task={task}", status=500, json={})
-    with patch(PLATFORMS, []):
-        result = await _open(hass, mock_config_entry)
-        assert _choices(result, CONF_STT_MODEL) == [DEFAULT_STT_MODEL]
-        assert _choices(result, CONF_TTS_MODEL) == [DEFAULT_TTS_MODEL]
-        assert DEFAULT_TTS_VOICE in _choices(result, CONF_TTS_VOICE)
-        result = await hass.config_entries.options.async_configure(
-            result["flow_id"], OPTIONS
-        )
+    result = await _open(hass, mock_config_entry)
+    assert _choices(result, CONF_STT_MODEL) == [DEFAULT_STT_MODEL]
+    assert _choices(result, CONF_TTS_MODEL) == [DEFAULT_TTS_MODEL]
+    assert DEFAULT_TTS_VOICE in _choices(result, CONF_TTS_VOICE)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], OPTIONS
+    )
     assert result["type"] is FlowResultType.CREATE_ENTRY
 
 
@@ -137,10 +132,7 @@ async def test_options_rejects_voice_not_in_model(
         voices={DEFAULT_TTS_MODEL: ["aquila"], other: ["thalia"]},
         discovered=True,
     )
-    with (
-        patch(PLATFORMS, []),
-        patch(DISCOVER, return_value=catalog),
-    ):
+    with patch(DISCOVER, return_value=catalog):
         result = await _open(hass, mock_config_entry)
         result = await hass.config_entries.options.async_configure(
             result["flow_id"],
@@ -151,12 +143,12 @@ async def test_options_rejects_voice_not_in_model(
     assert _choices(result, CONF_TTS_VOICE) == ["thalia"]
     marker = next(k for k in result["data_schema"].schema if k == CONF_TTS_MODEL)
     assert marker.description["suggested_value"] == other
-    with patch(PLATFORMS, []), patch(DISCOVER, return_value=catalog):
+    with patch(DISCOVER, return_value=catalog):
         result = await hass.config_entries.options.async_configure(
             result["flow_id"],
             {**OPTIONS, CONF_TTS_MODEL: other, CONF_TTS_VOICE: "thalia"},
         )
-        await hass.async_block_till_done()
+    await hass.async_block_till_done()
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert mock_config_entry.options[CONF_TTS_MODEL] == other
     assert mock_config_entry.options[CONF_TTS_VOICE] == "thalia"
@@ -173,8 +165,7 @@ async def test_options_keeps_saved_model_missing_from_catalog(
         mock_config_entry,
         options={**OPTIONS, CONF_STT_MODEL: "@cf/openai/whisper-gone"},
     )
-    with patch(PLATFORMS, []):
-        result = await _open(hass, mock_config_entry)
+    result = await _open(hass, mock_config_entry)
     assert "@cf/openai/whisper-gone" in _choices(result, CONF_STT_MODEL)
 
 

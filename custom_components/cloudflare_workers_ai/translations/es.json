@@ -87,6 +87,20 @@
   "entity": {
     "stt": {
       "name": "Voz a texto"
+    },
+    "tts": {
+      "name": "Texto a voz"
+    }
+  },
+  "exceptions": {
+    "quota_exceeded": {
+      "message": "El cupo diario de Cloudflare Workers AI está agotado. Las peticiones se reanudan cuando se restablece."
+    },
+    "message_too_long": {
+      "message": "El texto supera la longitud máxima de {max_length} caracteres."
+    },
+    "tts_failed": {
+      "message": "Falló la síntesis de voz. Consultar los registros para más detalles."
     }
   }
 }

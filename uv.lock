@@ -375,6 +375,15 @@ wheels = [
 ]
 
 [[package]]
+name = "async-timeout"
+version = "5.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a5/ae/136395dfbfe00dfc94da3f3e136d0b13f394cba8f4841120e34226265780/async_timeout-5.0.1.tar.gz", hash = "sha256:d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3", size = 9274, upload-time = "2024-11-06T16:41:39.6Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fe/ba/e2081de779ca30d473f21f5b30e0e737c438205440784c7dfc81efc2b029/async_timeout-5.0.1-py3-none-any.whl", hash = "sha256:39e3809566ff85354557ec2398b55e096c8364bacac9405a7a1fa429e77fe76c", size = 6233, upload-time = "2024-11-06T16:41:37.9Z" },
+]
+
+[[package]]
 name = "atomicwrites-homeassistant"
 version = "1.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1200,6 +1209,8 @@ source = { virtual = "." }
 
 [package.dev-dependencies]
 dev = [
+    { name = "ha-ffmpeg" },
+    { name = "mutagen" },
     { name = "mypy" },
     { name = "pytest-cov" },
     { name = "pytest-homeassistant-custom-component" },
@@ -1210,10 +1221,24 @@ dev = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "ha-ffmpeg", specifier = "==3.2.2" },
+    { name = "mutagen", specifier = "==1.48.1" },
     { name = "mypy" },
     { name = "pytest-cov" },
     { name = "pytest-homeassistant-custom-component", specifier = "==0.13.375" },
     { name = "ruff" },
+]
+
+[[package]]
+name = "ha-ffmpeg"
+version = "3.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "async-timeout" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1e/3b/bd1284a9bc39cc119b0da551a81be6cf30dc3cfb369ce8c62fb648d7a2ea/ha_ffmpeg-3.2.2.tar.gz", hash = "sha256:80e4a77b3eda73df456ec9cc3295a898ed7cbb8cd2d59798f10e8c10a8e6c401", size = 7608, upload-time = "2024-11-08T13:32:14.181Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/45/66/7863e5a3713bb71c02f050f14a751b02e7a2d50eaf2109c96a1202e65d8b/ha_ffmpeg-3.2.2-py3-none-any.whl", hash = "sha256:4fd4a4f4cdaf3243d2737942f3f41f141e4437d2af1167655815dc03283b1652", size = 8749, upload-time = "2024-11-08T13:32:12.69Z" },
 ]
 
 [[package]]
@@ -1799,6 +1824,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/00/2f/45eb8700ee15716cc22f5b42592b4d5bc1ca65c880179c2c10e42fd6f0b4/multidict-7.2.1-cp315-cp315t-win_amd64.whl", hash = "sha256:25ebc4208d9098f77caeb16df895a0e56eb6c3b22870ac4e3ec43e0a9d6a33b6", size = 101193, upload-time = "2026-10-24T20:41:34.124Z" },
     { url = "https://files.pythonhosted.org/packages/7b/80/37d26f26d20b937344cfd68d9a1f57d8bc4f64adae416fc6828a7f8c8a10/multidict-7.2.1-cp315-cp315t-win_arm64.whl", hash = "sha256:4d61be3725016ef5db3543c95f1f062d7d150ba776582d959a982af88e75fa55", size = 98863, upload-time = "2026-10-24T20:40:59.146Z" },
     { url = "https://files.pythonhosted.org/packages/9d/96/1aaad0e5df33f1f5af21775c411349c0234a6edd581ea403bc81919a6eab/multidict-7.2.1-py3-none-any.whl", hash = "sha256:08ea94663d9e7c25d14d78222f7aee906c472d4837766bec62477c38f6e419dc", size = 28145, upload-time = "2026-10-24T20:40:59.159Z" },
+]
+
+[[package]]
+name = "mutagen"
+version = "1.48.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/df/70/1675da133ea92227da41bf5b24e1c66be597ff736a1533ade41da986852f/mutagen-1.48.1.tar.gz", hash = "sha256:8f95637ab9f6f305cec6bd1294e197debe207998e3e068596563c74f86b0a173", size = 1276978, upload-time = "2026-06-25T09:47:32.443Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/47/d8/a29e4e3991765e7ce4ed1f7e4074fe1ba9da03e0048639734de60f9cadb9/mutagen-1.48.1-py3-none-any.whl", hash = "sha256:4f077fe87d3fc7fba259aa63d8c026b18382ca6a42ef37c61e16f1b1b5b82fe7", size = 195706, upload-time = "2026-06-25T09:47:30.296Z" },
 ]
 
 [[package]]
