@@ -9,3 +9,7 @@ coverage.xml
 htmlcov/
 .DS_Store
 .superpowers/
+
+# Local Home Assistant instance (make run): keep only the configuration
+/config/*
+!/config/configuration.yaml

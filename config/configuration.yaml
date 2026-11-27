@@ -1,0 +1,7 @@
+# Minimal Home Assistant configuration for local development (`make run`).
+default_config:
+
+logger:
+  default: info
+  logs:
+    custom_components.cloudflare_workers_ai: debug

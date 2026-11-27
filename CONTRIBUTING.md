@@ -9,15 +9,20 @@ Security problems are not reported in issues: see [SECURITY.md](SECURITY.md).
 Requires [uv](https://docs.astral.sh/uv/). The Python version is pinned in `.python-version`, and the development dependencies, including `pytest-homeassistant-custom-component`, are locked in `uv.lock`.
 
 ```sh
+make            # list the available targets
 make install    # create .venv with the locked dependencies
-make test       # run the tests with coverage (fails below 95 %)
-make lint       # ruff check, ruff format --check and mypy --strict
+make run        # start a local Home Assistant with the integration
 make format     # apply ruff fixes and formatting
+make lint       # ruff check, ruff format --check and mypy --strict
+make test       # run the tests with coverage (fails below 95 %)
+make check      # lint and test in one go
 ```
 
 CI runs `make lint` and `make test`, plus `hassfest` and the HACS validation. The tests simulate the Cloudflare API with recorded responses and never reach the network.
 
-To try a change in Home Assistant, copy `custom_components/cloudflare_workers_ai` into the `custom_components` folder of a development instance and restart it. Debug logs are under the `custom_components.cloudflare_workers_ai` logger.
+To try a change in Home Assistant, run `make run`. It starts the Home Assistant version installed in `.venv` with `config/` as its configuration folder, links `custom_components/` into it, and serves the UI on http://localhost:8123. The first start can take longer while Home Assistant prepares its database and any missing requirements. Create the owner account, add the integration from Settings → Devices & services, and restart with `Ctrl+C` and `make run` after each code change. Debug logs for the integration are on by default in `config/configuration.yaml`; everything else in `config/` is local state and ignored by git.
+
+You can also copy `custom_components/cloudflare_workers_ai` into the `custom_components` folder of an existing Home Assistant instance and restart it.
 
 ### Live check
 
