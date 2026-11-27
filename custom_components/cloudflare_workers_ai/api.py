@@ -92,9 +92,9 @@ class CloudflareClient:
         self._gateway_id = gateway_id
         self._gateway_token = gateway_token
 
-    def _headers(self) -> dict[str, str]:
+    def _headers(self, *, via_gateway: bool) -> dict[str, str]:
         headers = {"Authorization": f"Bearer {self._api_token}"}
-        if self._gateway_id and self._gateway_token:
+        if via_gateway and self._gateway_token:
             headers["cf-aig-authorization"] = f"Bearer {self._gateway_token}"
         return headers
 
@@ -112,13 +112,15 @@ class CloudflareClient:
         method: str,
         url: str,
         payload: dict[str, Any] | None = None,
+        *,
+        via_gateway: bool = False,
     ) -> tuple[bytes, str]:
         try:
             async with self._session.request(
                 method,
                 url,
                 json=payload,
-                headers=self._headers(),
+                headers=self._headers(via_gateway=via_gateway),
                 timeout=aiohttp.ClientTimeout(total=REQUEST_TIMEOUT),
             ) as response:
                 body = await response.read()
@@ -142,7 +144,12 @@ class CloudflareClient:
 
     async def run_json(self, model: str, payload: dict[str, Any]) -> dict[str, Any]:
         """Run a model and return the unwrapped result."""
-        body, _ = await self._request("POST", self._run_url(model), payload)
+        body, _ = await self._request(
+            "POST",
+            self._run_url(model),
+            payload,
+            via_gateway=bool(self._gateway_id),
+        )
         data = _parse_json(body)
         if not _is_success(data) or not isinstance(data.get("result"), dict):
             raise CloudflareResponseError("Unexpected response body from Cloudflare")
@@ -153,7 +160,12 @@ class CloudflareClient:
         self, model: str, payload: dict[str, Any]
     ) -> tuple[bytes, str]:
         """Run a model that returns raw bytes."""
-        return await self._request("POST", self._run_url(model), payload)
+        return await self._request(
+            "POST",
+            self._run_url(model),
+            payload,
+            via_gateway=bool(self._gateway_id),
+        )
 
 
 def _is_success(data: Any) -> bool:

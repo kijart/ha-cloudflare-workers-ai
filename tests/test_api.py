@@ -185,6 +185,7 @@ async def test_verify_token_ok_and_invalid(
     aioclient_mock.get(url, json={"success": True, "result": {"status": "active"}})
     await client.verify_token()
     assert str(aioclient_mock.mock_calls[0][1]) == url
+    assert "cf-aig-authorization" not in aioclient_mock.mock_calls[0][3]
 
     aioclient_mock.clear_requests()
     aioclient_mock.get(
