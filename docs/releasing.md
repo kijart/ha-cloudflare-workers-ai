@@ -5,7 +5,7 @@ Releases are automated with [release-please](https://github.com/googleapis/relea
 ## How a release happens
 
 1. Every push to `main` updates an open release pull request with the next version, the `CHANGELOG.md` entry and the `version` field of `custom_components/cloudflare_workers_ai/manifest.json`. Only `feat`, `fix`, `perf` and `revert` commits are listed in the changelog and start a release; other types (`docs`, `refactor`, `style`, `test`, `build`, `ci`, `chore`) ship with the next release without a changelog entry.
-2. Merging that pull request (with **Rebase and merge** or **Squash and merge**, to keep the history linear) creates the tag `X.Y.Z` (no `v` prefix) and the GitHub Release. HACS offers these releases as the installable versions.
+2. Merging that pull request (with **Rebase and merge** or **Squash and merge**, to keep the history linear) creates the tag `X.Y.Z` (no `v` prefix) and the GitHub Release. The Marketplace (HACS on Home Assistant 2026.10 and older) offers these releases as the installable versions.
 
 The first release is `0.1.0`: `.release-please-manifest.json` starts at `0.0.0` and `initial-version` sets the first proposed version. Before 1.0.0, `feat` bumps the minor version and breaking changes do too.
 
@@ -23,7 +23,9 @@ The release pull request, the tag and the release are created with a GitHub App 
 
 Actions are pinned to commit SHAs; Dependabot opens a weekly pull request to update them.
 
-## HACS validation
+## Marketplace (HACS) validation
+
+The Marketplace that Home Assistant 2026.11 built in from HACS still validates repositories with the `hacs/action` GitHub Action, and still needs `hacs.json` at the repository root.
 
 The HACS job ignores the `brands` check, because the integration is not in [home-assistant/brands](https://github.com/home-assistant/brands): its icons ship in `custom_components/cloudflare_workers_ai/brand/` instead (supported since Home Assistant 2026.3; source in `docs/brand/icon.svg`). Remove `ignore: brands` from `.github/workflows/ci.yml` if HACS starts accepting local brand images, or if the icons are also submitted to that repository.
 
@@ -31,4 +33,4 @@ The same job checks the repository settings: the GitHub repository needs a descr
 
 ## Version fields
 
-The released version lives in `custom_components/cloudflare_workers_ai/manifest.json`, the file HACS and Home Assistant read, and release-please keeps it up to date. The `version` in `pyproject.toml` is a fixed `0.0.0` placeholder: the project is a virtual uv project (`package = false`) that only holds the development environment, so its version is never published, and keeping it in step would also require rewriting `uv.lock` in every release pull request.
+The released version lives in `custom_components/cloudflare_workers_ai/manifest.json`, the file the Marketplace (or HACS) and Home Assistant read, and release-please keeps it up to date. The `version` in `pyproject.toml` is a fixed `0.0.0` placeholder: the project is a virtual uv project (`package = false`) that only holds the development environment, so its version is never published, and keeping it in step would also require rewriting `uv.lock` in every release pull request.

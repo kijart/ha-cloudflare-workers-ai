@@ -13,11 +13,15 @@
 
 <p align="center">
   <img alt="Home Assistant 2026.10.4+" src="https://img.shields.io/badge/Home%20Assistant-2026.10.4%2B-blue">
-  <a href="https://hacs.xyz/docs/faq/custom_repositories/"><img alt="HACS: Custom" src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg"></a>
+  <a href="https://www.home-assistant.io/integrations/marketplace/"><img alt="Marketplace: Custom" src="https://img.shields.io/badge/Marketplace-Custom-41BDF5.svg"></a>
   <a href="https://github.com/kijart/ha-cloudflare-workers-ai/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/kijart/ha-cloudflare-workers-ai"></a>
   <a href="https://github.com/kijart/ha-cloudflare-workers-ai/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/kijart/ha-cloudflare-workers-ai/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/kijart/ha-cloudflare-workers-ai/actions/workflows/release-please.yml"><img alt="Release please" src="https://github.com/kijart/ha-cloudflare-workers-ai/actions/workflows/release-please.yml/badge.svg"></a>
   <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green">
+</p>
+
+<p align="center">
+  <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=kijart&repository=ha-cloudflare-workers-ai&category=integration"><img alt="Open in Marketplace: open this repository in the Marketplace of your Home Assistant instance" src="https://my.home-assistant.io/badges/hacs_repository.svg"></a>
 </p>
 
 ## Contents <!-- omit in toc -->
@@ -26,7 +30,7 @@
 - [Use cases](#use-cases)
 - [Requirements](#requirements)
 - [Installation](#installation)
-  - [HACS](#hacs)
+  - [Marketplace](#marketplace)
   - [Manual](#manual)
   - [Removal](#removal)
 - [Configuration](#configuration)
@@ -48,7 +52,7 @@
 - **Minimal token permissions** — a token with only `Workers AI - Read` is enough for transcription, speech and model discovery, verified against the real API. See [docs/token.md](docs/token.md).
 - **Models and voices discovered from Cloudflare** — the Whisper and Aura models and their voices are read from the Cloudflare catalog, so a new Aura language appears without an update. A retired model raises a repair issue instead of failing silently.
 - **Whisper with silence filtering** — voice activity detection on, `condition_on_previous_text` off, and audio shorter than 0.3 s or longer than 30 s rejected locally, so silence and stuck microphones neither hallucinate text nor spend the allocation.
-- **Tested** — unit tests with over 95 % coverage, `mypy --strict`, Ruff, `hassfest` and HACS validation in CI, plus a [live check](CONTRIBUTING.md#live-check) against the real API.
+- **Tested** — unit tests with over 95 % coverage, `mypy --strict`, Ruff, `hassfest` and Marketplace (HACS) validation in CI, plus a [live check](CONTRIBUTING.md#live-check) against the real API.
 - **Home Assistant practices** — config flow with reauthentication and reconfiguration, diagnostics with the credentials redacted, and translated errors.
 - **English and Spanish** user interface.
 
@@ -66,11 +70,17 @@
 
 ## Installation
 
-### HACS
+### Marketplace
 
-1. In HACS, open the menu (⋮) → **Custom repositories**, add `https://github.com/kijart/ha-cloudflare-workers-ai` with the type **Integration**.
-2. Download **Cloudflare Workers AI**, choosing a release.
+Since Home Assistant 2026.11, community integrations are installed from the built-in Marketplace, which replaces HACS.
+
+Use the **Open in Marketplace** button at the top of this page, or add the repository by hand:
+
+1. Go to **Settings → Marketplace**, select **Add from link** and enter `kijart/ha-cloudflare-workers-ai`. Custom repositories need a GitHub connection; the Marketplace asks for it the first time.
+2. Open **Cloudflare Workers AI** and select **Install**, choosing a release.
 3. Restart Home Assistant.
+
+On Home Assistant 2026.10, use HACS instead: open the menu (⋮) → **Custom repositories**, add `https://github.com/kijart/ha-cloudflare-workers-ai` with the type **Integration**, download it and restart Home Assistant.
 
 ### Manual
 
@@ -81,7 +91,7 @@
 ### Removal
 
 1. Go to **Settings → Devices & services → Cloudflare Workers AI**, open the menu (⋮) of the entry and choose **Delete**.
-2. Remove the integration from HACS, or delete the `custom_components/cloudflare_workers_ai` folder, and restart Home Assistant.
+2. Remove the integration from the Marketplace (or HACS on Home Assistant 2026.10), or delete the `custom_components/cloudflare_workers_ai` folder, and restart Home Assistant.
 3. Delete the API token in the Cloudflare dashboard.
 
 ## Configuration
