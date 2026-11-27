@@ -24,6 +24,8 @@ from .models import FALLBACK_AURA_2_ES_VOICES, tts_language
 
 _LOGGER = logging.getLogger(__name__)
 
+PARALLEL_UPDATES = 0
+
 _FALLBACK_LANGUAGE = "en"
 
 

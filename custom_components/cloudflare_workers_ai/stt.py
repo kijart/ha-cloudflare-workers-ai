@@ -37,6 +37,8 @@ from .entity import CloudflareWorkersAIEntity, warn_quota_once
 
 _LOGGER = logging.getLogger(__name__)
 
+PARALLEL_UPDATES = 0
+
 _ERROR = SpeechResult(None, SpeechResultState.ERROR)
 
 

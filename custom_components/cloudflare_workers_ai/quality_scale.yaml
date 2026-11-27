@@ -55,9 +55,7 @@ rules:
     comment: >
       The exhausted daily quota is logged once per UTC day; other failures are
       logged once per user-triggered request.
-  parallel-updates:
-    status: todo
-    comment: PARALLEL_UPDATES is not set in the stt and tts platforms.
+  parallel-updates: done
   reauthentication-flow: done
   test-coverage: done
 
