@@ -1,6 +1,6 @@
 [project]
 name = "ha-cloudflare-workers-ai"
-version = "0.1.0"
+version = "0.0.0"
 description = "Home Assistant custom integration for speech-to-text and text-to-speech on Cloudflare Workers AI"
 license = "MIT"
 requires-python = ">=3.14.2"

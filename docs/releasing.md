@@ -28,3 +28,7 @@ Actions are pinned to commit SHAs; Dependabot opens a weekly pull request to upd
 The HACS job ignores the `brands` check, because the integration is not yet in [home-assistant/brands](https://github.com/home-assistant/brands). Remove `ignore: brands` from `.github/workflows/ci.yml` once the icon is submitted there.
 
 The same job checks the repository settings: the GitHub repository needs a description and topics (for example `home-assistant`, `hacs`, `cloudflare`, `stt`, `tts`), or the check fails.
+
+## Version fields
+
+The released version lives in `custom_components/cloudflare_workers_ai/manifest.json`, the file HACS and Home Assistant read, and release-please keeps it up to date. The `version` in `pyproject.toml` is a fixed `0.0.0` placeholder: the project is a virtual uv project (`package = false`) that only holds the development environment, so its version is never published, and keeping it in step would also require rewriting `uv.lock` in every release pull request.
