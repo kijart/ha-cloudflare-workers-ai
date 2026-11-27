@@ -148,6 +148,18 @@ async def test_options_rejects_voice_not_in_model(
         )
     assert result["type"] is FlowResultType.FORM
     assert result["errors"] == {CONF_TTS_VOICE: "invalid_voice"}
+    assert _choices(result, CONF_TTS_VOICE) == ["thalia"]
+    marker = next(k for k in result["data_schema"].schema if k == CONF_TTS_MODEL)
+    assert marker.description["suggested_value"] == other
+    with patch(PLATFORMS, []), patch(DISCOVER, return_value=catalog):
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            {**OPTIONS, CONF_TTS_MODEL: other, CONF_TTS_VOICE: "thalia"},
+        )
+        await hass.async_block_till_done()
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert mock_config_entry.options[CONF_TTS_MODEL] == other
+    assert mock_config_entry.options[CONF_TTS_VOICE] == "thalia"
 
 
 async def test_options_keeps_saved_model_missing_from_catalog(

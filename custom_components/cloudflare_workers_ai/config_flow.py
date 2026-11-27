@@ -110,6 +110,10 @@ class CloudflareWorkersAIOptionsFlow(OptionsFlowWithReload):
                 return self.async_create_entry(data={CONF_STT_PROMPT: "", **user_input})
             errors[CONF_TTS_VOICE] = "invalid_voice"
         voice = saved.get(CONF_TTS_VOICE, DEFAULT_TTS_VOICE)
+        voice_model = user_input[CONF_TTS_MODEL] if user_input else tts_model
+        voices = catalog.voices.get(voice_model, [])
+        if voice_model == tts_model:
+            voices = _with_saved(voices, voice)
         schema = vol.Schema(
             {
                 vol.Required(CONF_STT_MODEL, default=stt_model): _select(
@@ -122,7 +126,7 @@ class CloudflareWorkersAIOptionsFlow(OptionsFlowWithReload):
                     _with_saved(catalog.tts_models, tts_model)
                 ),
                 vol.Required(CONF_TTS_VOICE, default=voice): _select(
-                    _with_saved(catalog.voices.get(tts_model, []), voice),
+                    voices,
                     capitalize=True,
                 ),
             }
