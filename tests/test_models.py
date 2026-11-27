@@ -65,6 +65,8 @@ def test_family_for_matches_only_known_cf_models() -> None:
     assert whisper.key == "whisper"
     assert aura is not None
     assert aura.key == "aura"
+    assert family_for("@cf/openai/whisper") is None
+    assert family_for("@cf/openai/whisper-tiny-en") is None
     assert family_for("@cf/deepgram/nova-3") is None
     assert family_for("openai/tts-1") is None
     assert family_for("@cf/myshell-ai/melotts") is None
@@ -81,6 +83,8 @@ def test_fallback_catalog() -> None:
     """The fallback catalog holds the defaults."""
     catalog = fallback_catalog()
     assert catalog.stt_models == [DEFAULT_STT_MODEL]
+    assert "@cf/openai/whisper" not in catalog.stt_models
+    assert [DEFAULT_STT_MODEL]
     assert catalog.tts_models == [DEFAULT_TTS_MODEL]
     assert catalog.voices == {DEFAULT_TTS_MODEL: list(FALLBACK_AURA_2_ES_VOICES)}
     assert catalog.discovered is False
@@ -98,10 +102,8 @@ async def test_discover_filters_and_reads_voices(
     assert catalog.discovered is True
     assert catalog.voices[AURA_EN] == ["andromeda"]
     assert catalog.voices[AURA_1] == ["luna", "orion"]
-    assert catalog.stt_models == [
-        DEFAULT_STT_MODEL,
-        "@cf/openai/whisper",
-    ]
+    assert catalog.stt_models == [DEFAULT_STT_MODEL]
+    assert "@cf/openai/whisper" not in catalog.stt_models
     assert "@cf/deepgram/nova-3" not in catalog.stt_models
     assert catalog.tts_models == [AURA_ES, AURA_1, AURA_EN]
     assert "aquila" in catalog.voices[AURA_ES]

@@ -36,7 +36,9 @@ class ModelFamily:
 
 
 FAMILIES: tuple[ModelFamily, ...] = (
-    ModelFamily("whisper", TASK_ASR, re.compile(r"^@cf/openai/whisper(-[a-z0-9-]+)?$")),
+    ModelFamily(
+        "whisper", TASK_ASR, re.compile(r"^@cf/openai/whisper-large-v3-turbo$")
+    ),
     ModelFamily("aura", TASK_TTS, re.compile(r"^@cf/deepgram/aura-(1|2-[a-z]{2})$")),
 )
 

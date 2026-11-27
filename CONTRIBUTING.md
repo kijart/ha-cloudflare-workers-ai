@@ -1,6 +1,6 @@
 # Contributing
 
-Contributions are welcome, and translations are the easiest way to help: a new language, or a fix to a string that reads wrong. Bug reports and small fixes are welcome too. For larger changes, such as support for another model family, please open an [issue](https://github.com/kijart/ha-cloudflare-workers-ai/issues) first to agree on the approach.
+Contributions are welcome, and translations are the easiest way to help: a new language, or a fix to a string that reads wrong. Bug reports and small fixes are welcome too. For larger changes, such as support for another model family, please open an [issue](https://github.com/kijart/ha-cloudflare-workers-ai/issues) first to agree on the approach. [docs/model-families.md](docs/model-families.md) describes how a new family is added.
 
 Security problems are not reported in issues: see [SECURITY.md](SECURITY.md).
 

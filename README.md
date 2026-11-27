@@ -74,7 +74,7 @@ Options (**Configure**):
 
 | Option                | Values                                                                                                            |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Speech-to-text model  | Whisper models in the catalog · default `@cf/openai/whisper-large-v3-turbo`                                       |
+| Speech-to-text model  | Whisper large-v3-turbo, when listed in the catalog · default `@cf/openai/whisper-large-v3-turbo`                                       |
 | Initial prompt        | Optional text with room and device names that helps the transcription                                             |
 | Text-to-speech model  | Aura models in the catalog (`@cf/deepgram/aura-2-es`, `aura-2-en`, `aura-1`) · default `@cf/deepgram/aura-2-es`   |
 | Voice                 | Voices of the selected Aura model · default `aquila`                                                              |
@@ -106,7 +106,7 @@ The plan is shown in the Cloudflare dashboard under **Workers & Pages → Plans*
 
 ## Known limitations
 
-- Only the Whisper family for speech-to-text and the Aura family for text-to-speech. Other models in the catalog, such as Deepgram Nova-3 and Flux, are not offered.
+- Only `@cf/openai/whisper-large-v3-turbo` for speech-to-text (the plain `@cf/openai/whisper` model takes a binary body instead of base64 JSON and is not offered) and the Aura family for text-to-speech. Other models in the catalog, such as Deepgram Nova-3 and Flux, are not offered.
 - Text-to-speech is not streamed: the audio is returned once it is complete.
 - Text longer than 2,000 characters is rejected with an error, not truncated.
 - The text-to-speech language is the language of the selected Aura model (`aura-2-es` → Spanish, `aura-2-en` and `aura-1` → English), one language per entry.
