@@ -113,6 +113,7 @@ class CloudflareClient:
         url: str,
         payload: dict[str, Any] | None = None,
         *,
+        params: dict[str, str] | None = None,
         via_gateway: bool = False,
     ) -> tuple[bytes, str]:
         try:
@@ -120,6 +121,7 @@ class CloudflareClient:
                 method,
                 url,
                 json=payload,
+                params=params,
                 headers=self._headers(via_gateway=via_gateway),
                 timeout=aiohttp.ClientTimeout(total=REQUEST_TIMEOUT),
             ) as response:
@@ -166,6 +168,32 @@ class CloudflareClient:
             payload,
             via_gateway=bool(self._gateway_id),
         )
+
+    async def list_models(self, task: str) -> list[dict[str, Any]]:
+        """List the models available for a task."""
+        body, _ = await self._request(
+            "GET",
+            f"{API_BASE}/accounts/{self._account_id}/ai/models/search",
+            params={"task": task},
+        )
+        data = _parse_json(body)
+        if not _is_success(data) or not isinstance(data.get("result"), list):
+            raise CloudflareResponseError("Unexpected response body from Cloudflare")
+        return [model for model in data["result"] if isinstance(model, dict)]
+
+    async def get_input_schema(self, model: str) -> dict[str, Any]:
+        """Return the JSON schema of the input of a model."""
+        body, _ = await self._request(
+            "GET",
+            f"{API_BASE}/accounts/{self._account_id}/ai/models/schema",
+            params={"model": model},
+        )
+        data = _parse_json(body)
+        result = data.get("result") if _is_success(data) else None
+        schema = result.get("input") if isinstance(result, dict) else None
+        if not isinstance(schema, dict):
+            raise CloudflareResponseError("Unexpected response body from Cloudflare")
+        return schema
 
 
 def _is_success(data: Any) -> bool:
