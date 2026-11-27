@@ -115,9 +115,7 @@ class CloudflareWorkersAIConfigFlow(ConfigFlow, domain=DOMAIN):
             self._abort_if_unique_id_mismatch(reason="wrong_account")
             errors = await self._verify(user_input)
             if not errors:
-                return self.async_update_reload_and_abort(
-                    entry, data_updates=user_input
-                )
+                return self.async_update_reload_and_abort(entry, data=user_input)
         return self.async_show_form(
             step_id="reconfigure",
             data_schema=self.add_suggested_values_to_schema(

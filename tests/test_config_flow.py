@@ -221,3 +221,27 @@ async def test_reconfigure_other_account_aborts(
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "wrong_account"
     assert dict(mock_config_entry.data) == original
+
+
+async def test_reconfigure_disabling_gateway_drops_stale_keys(
+    hass: HomeAssistant, mock_cloudflare: AiohttpClientMocker
+) -> None:
+    """Gateway keys omitted from the form are removed from the entry."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="acc",
+        data={
+            **USER_INPUT,
+            CONF_USE_GATEWAY: True,
+            CONF_GATEWAY_ID: "gw",
+            CONF_GATEWAY_TOKEN: "gw-token-secret",
+        },
+    )
+    entry.add_to_hass(hass)
+    result = await entry.start_reconfigure_flow(hass)
+    with patch(SETUP, return_value=True):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], USER_INPUT
+        )
+    assert result["reason"] == "reconfigure_successful"
+    assert dict(entry.data) == USER_INPUT
