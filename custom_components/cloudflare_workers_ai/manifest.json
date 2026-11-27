@@ -1,10 +1,16 @@
 {
   "domain": "cloudflare_workers_ai",
   "name": "Cloudflare Workers AI",
-  "categories": ["ai_voice.speech"],
-  "codeowners": ["@kijart"],
+  "categories": [
+    "ai_voice.speech"
+  ],
+  "codeowners": [
+    "@kijart"
+  ],
   "config_flow": true,
-  "connectivity": ["cloud"],
+  "connectivity": [
+    "cloud"
+  ],
   "documentation": "https://github.com/kijart/ha-cloudflare-workers-ai",
   "integration_type": "service",
   "iot_class": "cloud_polling",
