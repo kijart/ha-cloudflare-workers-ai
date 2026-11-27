@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Cloudflare Workers AI",
+        "description": "Connect a Cloudflare account to use Workers AI for speech-to-text and text-to-speech.",
+        "data": {
+          "account_id": "Account ID",
+          "api_token": "API token",
+          "use_gateway": "Use AI Gateway",
+          "gateway_id": "Gateway ID",
+          "gateway_token": "Gateway token"
+        },
+        "data_description": {
+          "account_id": "Cloudflare account ID, shown in the Cloudflare dashboard.",
+          "api_token": "Cloudflare API token with Workers AI permissions.",
+          "use_gateway": "Route requests through Cloudflare AI Gateway.",
+          "gateway_id": "Name of the AI Gateway. Required when AI Gateway is enabled.",
+          "gateway_token": "Token for an authenticated AI Gateway. Leave empty for a gateway without authentication."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "The API token is invalid or lacks the required permissions.",
+      "cannot_connect": "Unable to connect to Cloudflare.",
+      "gateway_id_required": "The gateway ID is required when AI Gateway is enabled.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This Cloudflare account is already configured."
+    }
+  }
+}

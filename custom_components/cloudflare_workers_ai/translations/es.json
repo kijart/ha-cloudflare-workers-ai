@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Cloudflare Workers AI",
+        "description": "Conectar una cuenta de Cloudflare para usar Workers AI en voz a texto y texto a voz.",
+        "data": {
+          "account_id": "ID de cuenta",
+          "api_token": "Token de API",
+          "use_gateway": "Usar AI Gateway",
+          "gateway_id": "ID del gateway",
+          "gateway_token": "Token del gateway"
+        },
+        "data_description": {
+          "account_id": "ID de la cuenta de Cloudflare, visible en el panel de Cloudflare.",
+          "api_token": "Token de API de Cloudflare con permisos de Workers AI.",
+          "use_gateway": "Enviar las peticiones a través de Cloudflare AI Gateway.",
+          "gateway_id": "Nombre del AI Gateway. Obligatorio cuando AI Gateway está activado.",
+          "gateway_token": "Token de un AI Gateway con autenticación. Se deja vacío para un gateway sin autenticación."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "El token de API no es válido o carece de los permisos necesarios.",
+      "cannot_connect": "No se puede conectar con Cloudflare.",
+      "gateway_id_required": "El ID del gateway es obligatorio cuando AI Gateway está activado.",
+      "unknown": "Error inesperado."
+    },
+    "abort": {
+      "already_configured": "Esta cuenta de Cloudflare ya está configurada."
+    }
+  }
+}
