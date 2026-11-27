@@ -12,6 +12,7 @@ from pytest_homeassistant_custom_component.typing import ClientSessionGenerator
 from homeassistant.core import HomeAssistant
 
 API_TOKEN = "test-api-token-secret"
+GATEWAY_TOKEN = "test-gateway-token-secret"
 REDACTED = "**REDACTED**"
 
 
@@ -37,3 +38,24 @@ async def test_diagnostics_redacts_secrets(
     assert diag["catalog"]["stt_models"]
     assert diag["catalog"]["tts_models"]
     assert diag["catalog"]["voices"]
+
+
+async def test_diagnostics_redacts_gateway_token(
+    hass: HomeAssistant,
+    hass_client: ClientSessionGenerator,
+    gateway_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+) -> None:
+    """Diagnostics hide the gateway token when the gateway is enabled."""
+    gateway_config_entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(gateway_config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    diag = await get_diagnostics_for_config_entry(
+        hass, hass_client, gateway_config_entry
+    )
+
+    assert diag["entry"]["data"]["gateway_token"] == REDACTED
+    dumped = json.dumps(diag)
+    assert GATEWAY_TOKEN not in dumped
+    assert API_TOKEN not in dumped

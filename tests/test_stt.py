@@ -17,11 +17,13 @@ from custom_components.cloudflare_workers_ai.const import (
     API_BASE,
     CONF_STT_PROMPT,
     DEFAULT_STT_MODEL,
+    DEFAULT_TTS_MODEL,
     DOMAIN,
     GATEWAY_BASE,
     MAX_STT_AUDIO_BYTES,
     STT_BYTES_PER_SECOND,
 )
+from custom_components.cloudflare_workers_ai.tts import CloudflareTTSEntity
 from homeassistant.components.stt import (
     AudioBitRates,
     AudioChannels,
@@ -37,6 +39,7 @@ from homeassistant.components.stt import (
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -278,3 +281,24 @@ async def test_stt_gateway_auth_error_warns_without_reauth(
     assert API_TOKEN not in caplog.text
     flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
     assert not any(flow["context"]["source"] == "reauth" for flow in flows)
+
+
+async def test_stt_then_tts_quota_share_one_warning(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Quota errors of both entities on the same UTC day log one warning."""
+    stt = await _setup(hass, mock_config_entry)
+    tts_url = f"{API_BASE}/accounts/acc/ai/run/{DEFAULT_TTS_MODEL}"
+    mock_cloudflare.post(RUN_URL, status=429, json=QUOTA_BODY)
+    mock_cloudflare.post(tts_url, status=429, json=QUOTA_BODY)
+    caplog.set_level(logging.WARNING)
+    await stt.async_process_audio_stream(METADATA, _stream(_pcm(1)))
+    tts = CloudflareTTSEntity(mock_config_entry)
+    tts.hass = hass
+    with pytest.raises(HomeAssistantError):
+        await tts.async_get_tts_audio("Hola", "es", {})
+    warnings = [r for r in caplog.records if "quota exhausted" in r.getMessage()]
+    assert len(warnings) == 1
