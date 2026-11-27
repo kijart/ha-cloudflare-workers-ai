@@ -1,0 +1,17 @@
+<!-- Source for custom_components/cloudflare_workers_ai/brand/*.png.
+     Light variant fill: #0d6f7d (icon.png); dark variant fill: #5fcfdc (dark_icon.png).
+     PNGs are trimmed to the cloud, centered on a square transparent canvas. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <mask id="wave">
+      <path d="M64 196H196A44 44 0 0 0 196 108A56 56 0 0 0 88 100A50 50 0 0 0 64 196Z" fill="#fff"/>
+      <rect x="78" y="139" width="12" height="22" rx="6" fill="#000"/>
+      <rect x="96" y="127" width="12" height="46" rx="6" fill="#000"/>
+      <rect x="114" y="113" width="12" height="74" rx="6" fill="#000"/>
+      <rect x="132" y="122" width="12" height="56" rx="6" fill="#000"/>
+      <rect x="150" y="108" width="12" height="84" rx="6" fill="#000"/>
+      <rect x="168" y="130" width="12" height="40" rx="6" fill="#000"/>
+    </mask>
+  </defs>
+  <path d="M64 196H196A44 44 0 0 0 196 108A56 56 0 0 0 88 100A50 50 0 0 0 64 196Z" fill="#0d6f7d" mask="url(#wave)"/>
+</svg>

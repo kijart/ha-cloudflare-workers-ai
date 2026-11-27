@@ -25,7 +25,7 @@ Actions are pinned to commit SHAs; Dependabot opens a weekly pull request to upd
 
 ## HACS validation
 
-The HACS job ignores the `brands` check, because the integration is not yet in [home-assistant/brands](https://github.com/home-assistant/brands). Remove `ignore: brands` from `.github/workflows/ci.yml` once the icon is submitted there.
+The HACS job ignores the `brands` check, because the integration is not in [home-assistant/brands](https://github.com/home-assistant/brands): its icons ship in `custom_components/cloudflare_workers_ai/brand/` instead (supported since Home Assistant 2026.3; source in `docs/brand/icon.svg`). Remove `ignore: brands` from `.github/workflows/ci.yml` if HACS starts accepting local brand images, or if the icons are also submitted to that repository.
 
 The same job checks the repository settings: the GitHub repository needs a description and topics (for example `home-assistant`, `hacs`, `cloudflare`, `stt`, `tts`), or the check fails.
 

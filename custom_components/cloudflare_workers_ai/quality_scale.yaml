@@ -7,8 +7,8 @@ rules:
     status: exempt
     comment: The STT and TTS entities call the API on demand and do not poll.
   brands:
-    status: todo
-    comment: No brand images are shipped yet.
+    status: done
+    comment: Brand images ship in the integration's brand/ folder (supported for custom integrations since HA 2026.3).
   common-modules: done
   config-flow: done
   config-flow-test-coverage: done
