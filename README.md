@@ -135,6 +135,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), including how to add a language. Securit
 
 Inspired by [bjesus/ha-cloudflare-ai](https://github.com/bjesus/ha-cloudflare-ai). This project is new code and only uses it as a reference.
 
+## Disclaimer
+
+This is an independent, unofficial project. It is not affiliated with, endorsed by or supported by Cloudflare, Inc., Deepgram, OpenAI or the Home Assistant project. All product names, logos and trademarks (Cloudflare, Workers AI, Deepgram, Aura, Whisper, Home Assistant) belong to their respective owners and are used here only to describe what this integration works with.
+
 ## License
 
 [MIT](LICENSE)
