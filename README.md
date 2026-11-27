@@ -20,6 +20,27 @@
   <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green">
 </p>
 
+## Contents <!-- omit in toc -->
+
+- [Features](#features)
+- [Use cases](#use-cases)
+- [Requirements](#requirements)
+- [Installation](#installation)
+  - [HACS](#hacs)
+  - [Manual](#manual)
+  - [Removal](#removal)
+- [Configuration](#configuration)
+  - [How data is updated](#how-data-is-updated)
+- [Costs and quota](#costs-and-quota)
+- [Privacy](#privacy)
+- [Known limitations](#known-limitations)
+- [Troubleshooting](#troubleshooting)
+- [AI assistance](#ai-assistance)
+- [Contributing](#contributing)
+- [Credits](#credits)
+- [Disclaimer](#disclaimer)
+- [License](#license)
+
 ## Features
 
 - **Free within the daily allocation** — 10,000 neurons per day cover about 200 minutes of speech-to-text or 3,600 characters of text-to-speech. On the Workers Free plan, requests over the allocation fail instead of being billed. See [Costs and quota](#costs-and-quota).
@@ -72,24 +93,24 @@
 
 Setup fields:
 
-| Option          | Values                                                                                     |
-| --------------- | ------------------------------------------------------------------------------------------ |
-| Account ID      | Cloudflare account ID                                                                      |
-| API token       | Account API token with `Workers AI - Read`                                                 |
-| Use AI Gateway  | Off (default) · On                                                                         |
-| Gateway ID      | Name of the AI Gateway; required when AI Gateway is on                                     |
-| Gateway token   | Token of an authenticated gateway; empty for a gateway without authentication              |
+| Option         | Values                                                                        |
+| -------------- | ----------------------------------------------------------------------------- |
+| Account ID     | Cloudflare account ID                                                         |
+| API token      | Account API token with `Workers AI - Read`                                    |
+| Use AI Gateway | Off (default) · On                                                            |
+| Gateway ID     | Name of the AI Gateway; required when AI Gateway is on                        |
+| Gateway token  | Token of an authenticated gateway; empty for a gateway without authentication |
 
 Only the API token is verified at setup. The gateway ID and token are not checked until the first request that goes through the gateway; see Troubleshooting if it is rejected.
 
 Options (**Configure**):
 
-| Option                | Values                                                                                                            |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Speech-to-text model  | Whisper large-v3-turbo, when listed in the catalog · default `@cf/openai/whisper-large-v3-turbo`                                       |
-| Initial prompt        | Optional text with room and device names that helps the transcription                                             |
-| Text-to-speech model  | Aura models in the catalog (`@cf/deepgram/aura-2-es`, `aura-2-en`, `aura-1`) · default `@cf/deepgram/aura-2-es`   |
-| Voice                 | Voices of the selected Aura model · default `aquila`                                                              |
+| Option               | Values                                                                                                          |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Speech-to-text model | Whisper large-v3-turbo, when listed in the catalog · default `@cf/openai/whisper-large-v3-turbo`                |
+| Initial prompt       | Optional text with room and device names that helps the transcription                                           |
+| Text-to-speech model | Aura models in the catalog (`@cf/deepgram/aura-2-es`, `aura-2-en`, `aura-1`) · default `@cf/deepgram/aura-2-es` |
+| Voice                | Voices of the selected Aura model · default `aquila`                                                            |
 
 ### How data is updated
 
@@ -99,13 +120,13 @@ Nothing is polled. Speech-to-text and text-to-speech call Cloudflare only when A
 
 Prices and limits from the [Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/) page, checked in November 2026:
 
-|                         |                                                                                                       |
-| ----------------------- | ----------------------------------------------------------------------------------------------------- |
-| Free allocation         | 10,000 neurons per day, shared by speech-to-text and text-to-speech; resets at 00:00 UTC              |
-| Speech-to-text          | about 46.6 neurons per minute of audio: about 200 minutes per day                                     |
-| Text-to-speech          | $0.03 per 1,000 characters: about 3,600 characters per day                                            |
-| Over the allocation     | Workers Free: requests fail and nothing is billed · Workers Paid: $0.011 per 1,000 neurons            |
-| Integration limits      | audio up to 30 s and text up to 2,000 characters per request                                          |
+|                     |                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------ |
+| Free allocation     | 10,000 neurons per day, shared by speech-to-text and text-to-speech; resets at 00:00 UTC   |
+| Speech-to-text      | about 46.6 neurons per minute of audio: about 200 minutes per day                          |
+| Text-to-speech      | $0.03 per 1,000 characters: about 3,600 characters per day                                 |
+| Over the allocation | Workers Free: requests fail and nothing is billed · Workers Paid: $0.011 per 1,000 neurons |
+| Integration limits  | audio up to 30 s and text up to 2,000 characters per request                               |
 
 The plan is shown in the Cloudflare dashboard under **Workers & Pages → Plans** or **Billing → Subscriptions**. A paid plan for a domain is not Workers Paid. Home Assistant caches the generated speech, so repeated phrases are not synthesized again.
 
