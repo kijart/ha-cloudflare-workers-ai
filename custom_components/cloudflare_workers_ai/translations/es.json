@@ -60,5 +60,28 @@
       "reconfigure_successful": "Reconfiguración completada correctamente.",
       "wrong_account": "El ID de cuenta debe coincidir con el ya configurado."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Modelos y voz",
+        "description": "Seleccionar el modelo de voz a texto, el modelo de texto a voz y la voz. La lista de voces corresponde al modelo de texto a voz guardado; al cambiar de modelo, la voz se valida contra el modelo nuevo.",
+        "data": {
+          "stt_model": "Modelo de voz a texto",
+          "stt_initial_prompt": "Prompt inicial",
+          "tts_model": "Modelo de texto a voz",
+          "tts_voice": "Voz"
+        },
+        "data_description": {
+          "stt_model": "Modelo Whisper usado para transcribir la voz.",
+          "stt_initial_prompt": "Texto opcional con nombres o términos que ayudan a la transcripción. Se deja vacío para no usar ninguno.",
+          "tts_model": "Modelo Aura usado para sintetizar la voz.",
+          "tts_voice": "Voz del modelo Aura seleccionado."
+        }
+      }
+    },
+    "error": {
+      "invalid_voice": "La voz no está disponible para el modelo de texto a voz seleccionado."
+    }
   }
 }

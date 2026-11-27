@@ -60,5 +60,28 @@
       "reconfigure_successful": "Reconfiguration completed successfully.",
       "wrong_account": "The account ID must match the one already configured."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Models and voice",
+        "description": "Select the speech-to-text model, the text-to-speech model and the voice. The voice list belongs to the saved text-to-speech model; after changing the model, the voice is validated against the new model.",
+        "data": {
+          "stt_model": "Speech-to-text model",
+          "stt_initial_prompt": "Initial prompt",
+          "tts_model": "Text-to-speech model",
+          "tts_voice": "Voice"
+        },
+        "data_description": {
+          "stt_model": "Whisper model used to transcribe speech.",
+          "stt_initial_prompt": "Optional text with names or terms that help the transcription. Leave empty for none.",
+          "tts_model": "Aura model used to synthesize speech.",
+          "tts_voice": "Voice of the selected Aura model."
+        }
+      }
+    },
+    "error": {
+      "invalid_voice": "The voice is not available for the selected text-to-speech model."
+    }
   }
 }

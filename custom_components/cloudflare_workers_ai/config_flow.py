@@ -6,23 +6,40 @@ from typing import Any
 
 import probatio as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlowWithReload,
+)
 from homeassistant.const import CONF_API_TOKEN
+from homeassistant.core import callback
 from homeassistant.helpers.selector import (
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
     TextSelector,
     TextSelectorConfig,
     TextSelectorType,
 )
 
-from . import build_client
+from . import CloudflareWorkersAIConfigEntry, build_client
 from .api import CloudflareAuthError, CloudflareConnectionError
 from .const import (
     CONF_ACCOUNT_ID,
     CONF_GATEWAY_ID,
     CONF_GATEWAY_TOKEN,
+    CONF_STT_MODEL,
+    CONF_STT_PROMPT,
+    CONF_TTS_MODEL,
+    CONF_TTS_VOICE,
     CONF_USE_GATEWAY,
+    DEFAULT_STT_MODEL,
+    DEFAULT_TTS_MODEL,
+    DEFAULT_TTS_VOICE,
     DOMAIN,
 )
+from .models import ModelCatalog, async_discover, fallback_catalog
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,10 +59,95 @@ USER_SCHEMA = vol.Schema(
 REAUTH_SCHEMA = vol.Schema({vol.Required(CONF_API_TOKEN): _PASSWORD})
 
 
+def _select(values: list[str], *, capitalize: bool = False) -> SelectSelector:
+    return SelectSelector(
+        SelectSelectorConfig(
+            options=[
+                SelectOptionDict(
+                    value=value,
+                    label=value[:1].upper() + value[1:] if capitalize else value,
+                )
+                for value in values
+            ],
+            custom_value=False,
+        )
+    )
+
+
+def _with_saved(values: list[str], saved: str) -> list[str]:
+    return values if saved in values else [saved, *values]
+
+
+class CloudflareWorkersAIOptionsFlow(OptionsFlowWithReload):
+    """Handle the model, voice and prompt options."""
+
+    _catalog: ModelCatalog | None = None
+
+    async def _async_catalog(self) -> ModelCatalog:
+        if self._catalog is None:
+            entry: CloudflareWorkersAIConfigEntry = self.config_entry
+            if hasattr(entry, "runtime_data"):
+                entry.runtime_data.catalog = await async_discover(
+                    entry.runtime_data.client
+                )
+                self._catalog = entry.runtime_data.catalog
+            else:
+                self._catalog = fallback_catalog()
+        return self._catalog
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Manage the options."""
+        catalog = await self._async_catalog()
+        saved = self.config_entry.options
+        stt_model = saved.get(CONF_STT_MODEL, DEFAULT_STT_MODEL)
+        tts_model = saved.get(CONF_TTS_MODEL, DEFAULT_TTS_MODEL)
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            voices = catalog.voices.get(user_input[CONF_TTS_MODEL], [])
+            if user_input[CONF_TTS_VOICE] in voices:
+                return self.async_create_entry(data={CONF_STT_PROMPT: "", **user_input})
+            errors[CONF_TTS_VOICE] = "invalid_voice"
+        voice = saved.get(CONF_TTS_VOICE, DEFAULT_TTS_VOICE)
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_STT_MODEL, default=stt_model): _select(
+                    _with_saved(catalog.stt_models, stt_model)
+                ),
+                vol.Optional(CONF_STT_PROMPT, default=""): TextSelector(
+                    TextSelectorConfig(multiline=True)
+                ),
+                vol.Required(CONF_TTS_MODEL, default=tts_model): _select(
+                    _with_saved(catalog.tts_models, tts_model)
+                ),
+                vol.Required(CONF_TTS_VOICE, default=voice): _select(
+                    _with_saved(catalog.voices.get(tts_model, []), voice),
+                    capitalize=True,
+                ),
+            }
+        )
+        return self.async_show_form(
+            step_id="init",
+            data_schema=self.add_suggested_values_to_schema(
+                schema, user_input or saved
+            ),
+            errors=errors,
+        )
+
+
 class CloudflareWorkersAIConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the config flow."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: ConfigEntry,
+    ) -> CloudflareWorkersAIOptionsFlow:
+        """Return the options flow."""
+        return CloudflareWorkersAIOptionsFlow()
 
     async def _verify(self, data: Mapping[str, Any]) -> dict[str, str]:
         """Validate the settings and return form errors."""
