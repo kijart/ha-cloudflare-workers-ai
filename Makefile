@@ -6,7 +6,7 @@ install:
 lint:
 	uv run ruff check .
 	uv run ruff format --check .
-	uv run mypy custom_components
+	uv run mypy custom_components scripts
 
 format:
 	uv run ruff check --fix .
