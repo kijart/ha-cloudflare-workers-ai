@@ -112,6 +112,8 @@ async def async_discover(client: CloudflareClient) -> ModelCatalog:
                 voices[model] = model_voices
     except CloudflareError:
         return fallback_catalog()
+    if not stt_models or not voices:
+        return fallback_catalog()
     return ModelCatalog(
         stt_models=stt_models,
         tts_models=list(voices),

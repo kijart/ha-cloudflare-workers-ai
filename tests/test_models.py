@@ -51,6 +51,12 @@ def _mock_schema(mock: AiohttpClientMocker, model: str, **kwargs: Any) -> None:
     mock.get(f"{SCHEMA_URL}?model={model}", **kwargs)
 
 
+def _schema_with_voices(voices: list[str]) -> dict[str, Any]:
+    body: dict[str, Any] = json.loads(json.dumps(SCHEMA_BODY))
+    body["result"]["input"]["properties"]["speaker"]["enum"] = voices
+    return body
+
+
 def test_family_for_matches_only_known_cf_models() -> None:
     """Only Whisper and Aura models of Workers AI belong to a family."""
     whisper = family_for("@cf/openai/whisper-large-v3-turbo")
@@ -85,10 +91,13 @@ async def test_discover_filters_and_reads_voices(
 ) -> None:
     """Models are filtered by family and voices come from the schema."""
     _mock_search(aioclient_mock)
-    for model in (AURA_ES, AURA_EN, AURA_1):
-        _mock_schema(aioclient_mock, model, json=SCHEMA_BODY)
+    _mock_schema(aioclient_mock, AURA_ES, json=SCHEMA_BODY)
+    _mock_schema(aioclient_mock, AURA_EN, json=_schema_with_voices(["andromeda"]))
+    _mock_schema(aioclient_mock, AURA_1, json=_schema_with_voices(["luna", "orion"]))
     catalog = await async_discover(_client(hass))
     assert catalog.discovered is True
+    assert catalog.voices[AURA_EN] == ["andromeda"]
+    assert catalog.voices[AURA_1] == ["luna", "orion"]
     assert catalog.stt_models == [
         DEFAULT_STT_MODEL,
         "@cf/openai/whisper",
@@ -111,6 +120,30 @@ async def test_discover_schema_failure_uses_fallback_only_for_aura_2_es(
     assert catalog.discovered is True
     assert catalog.tts_models == [AURA_ES]
     assert catalog.voices == {AURA_ES: list(FALLBACK_AURA_2_ES_VOICES)}
+
+
+async def test_discover_without_usable_models_falls_back(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """No STT models or no usable TTS model yields the fallback catalog."""
+    # aura-2-es keeps its fallback voices, so drop it from the search result
+    tts_without_es = {
+        **TTS_BODY,
+        "result": [m for m in TTS_BODY["result"] if m["name"] != AURA_ES],
+    }
+    aioclient_mock.get(f"{SEARCH_URL}?task={TASK_ASR}", json=ASR_BODY)
+    aioclient_mock.get(f"{SEARCH_URL}?task={TASK_TTS}", json=tts_without_es)
+    for model in (AURA_EN, AURA_1):
+        _mock_schema(aioclient_mock, model, status=500)
+    assert await async_discover(_client(hass)) == fallback_catalog()
+
+
+async def test_discover_empty_search_falls_back(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """Empty search results yield the fallback catalog."""
+    aioclient_mock.get(SEARCH_URL, json={"success": True, "result": []})
+    assert await async_discover(_client(hass)) == fallback_catalog()
 
 
 @pytest.mark.parametrize("failure", [403, 500, asyncio.TimeoutError])
