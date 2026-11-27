@@ -18,13 +18,14 @@ from custom_components.cloudflare_workers_ai.const import (
 )
 from custom_components.cloudflare_workers_ai.models import TASK_ASR, TASK_TTS
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.const import CONF_API_TOKEN
+from homeassistant.const import CONF_API_TOKEN, Platform
 from homeassistant.core import HomeAssistant
 
 FIXTURES = Path(__file__).parent / "fixtures"
 API_TOKEN = "test-api-token-secret"
 VERIFY_URL = f"{API_BASE}/accounts/acc/tokens/verify"
 SEARCH_URL = f"{API_BASE}/accounts/acc/ai/models/search"
+# TODO(task 8): drop the PLATFORMS patch once tts.py exists.
 PLATFORMS = "custom_components.cloudflare_workers_ai.PLATFORMS"
 
 
@@ -35,7 +36,7 @@ async def test_setup_and_unload(
 ) -> None:
     """The entry loads with a discovered catalog and unloads cleanly."""
     mock_config_entry.add_to_hass(hass)
-    with patch(PLATFORMS, []):
+    with patch(PLATFORMS, [Platform.STT]):
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
         await hass.async_block_till_done()
         assert mock_config_entry.state is ConfigEntryState.LOADED
@@ -54,7 +55,7 @@ async def test_setup_auth_failure_starts_reauth(
     """A rejected token puts the entry in setup error and starts reauth."""
     aioclient_mock.get(VERIFY_URL, status=401, json=load_fixture("error_auth.json"))
     mock_config_entry.add_to_hass(hass)
-    with patch(PLATFORMS, []):
+    with patch(PLATFORMS, [Platform.STT]):
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
         await hass.async_block_till_done()
     assert mock_config_entry.state is ConfigEntryState.SETUP_ERROR
@@ -70,7 +71,7 @@ async def test_setup_connection_failure_retries(
     """A timeout during verification schedules a retry."""
     aioclient_mock.get(VERIFY_URL, exc=TimeoutError)
     mock_config_entry.add_to_hass(hass)
-    with patch(PLATFORMS, []):
+    with patch(PLATFORMS, [Platform.STT]):
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
         await hass.async_block_till_done()
     assert mock_config_entry.state is ConfigEntryState.SETUP_RETRY
@@ -84,7 +85,7 @@ async def test_setup_unexpected_response_retries(
     """An unexpected API response schedules a retry."""
     aioclient_mock.get(VERIFY_URL, status=500, json={"success": False})
     mock_config_entry.add_to_hass(hass)
-    with patch(PLATFORMS, []):
+    with patch(PLATFORMS, [Platform.STT]):
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
         await hass.async_block_till_done()
     assert mock_config_entry.state is ConfigEntryState.SETUP_RETRY
@@ -104,7 +105,7 @@ async def test_setup_succeeds_when_discovery_forbidden(
             json=load_fixture("error_auth.json"),
         )
     mock_config_entry.add_to_hass(hass)
-    with patch(PLATFORMS, []):
+    with patch(PLATFORMS, [Platform.STT]):
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
         await hass.async_block_till_done()
     assert mock_config_entry.state is ConfigEntryState.LOADED

@@ -83,5 +83,10 @@
     "error": {
       "invalid_voice": "The voice is not available for the selected text-to-speech model."
     }
+  },
+  "entity": {
+    "stt": {
+      "name": "Speech-to-text"
+    }
   }
 }
