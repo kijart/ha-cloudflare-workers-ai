@@ -106,13 +106,13 @@ class CloudflareWorkersAIOptionsFlow(OptionsFlowWithReload):
         errors: dict[str, str] = {}
         if user_input is not None:
             voices = catalog.voices.get(user_input[CONF_TTS_MODEL], [])
-            if user_input[CONF_TTS_VOICE] in voices:
+            if not voices or user_input[CONF_TTS_VOICE] in voices:
                 return self.async_create_entry(data={CONF_STT_PROMPT: "", **user_input})
             errors[CONF_TTS_VOICE] = "invalid_voice"
         voice = saved.get(CONF_TTS_VOICE, DEFAULT_TTS_VOICE)
         voice_model = user_input[CONF_TTS_MODEL] if user_input else tts_model
         voices = catalog.voices.get(voice_model, [])
-        if voice_model == tts_model:
+        if voice_model == tts_model or not voices:
             voices = _with_saved(voices, voice)
         schema = vol.Schema(
             {

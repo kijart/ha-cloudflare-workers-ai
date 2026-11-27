@@ -176,3 +176,27 @@ async def test_options_without_loaded_entry_uses_fallback(
     mock_config_entry.add_to_hass(hass)
     result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)
     assert _choices(result, CONF_TTS_MODEL) == [DEFAULT_TTS_MODEL]
+
+
+async def test_options_save_for_model_without_known_voices(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+) -> None:
+    """A model with no known voices does not block saving."""
+    other = "@cf/deepgram/aura-2-en"
+    catalog = ModelCatalog(
+        stt_models=[DEFAULT_STT_MODEL],
+        tts_models=[DEFAULT_TTS_MODEL, other],
+        voices={DEFAULT_TTS_MODEL: ["aquila"], other: []},
+        discovered=True,
+    )
+    with patch(DISCOVER, return_value=catalog):
+        result = await _open(hass, mock_config_entry)
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            {**OPTIONS, CONF_TTS_MODEL: other, CONF_TTS_VOICE: "aquila"},
+        )
+    await hass.async_block_till_done()
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert mock_config_entry.options[CONF_TTS_MODEL] == other

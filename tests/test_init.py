@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+import re
 from typing import Any
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -29,6 +30,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 API_TOKEN = "test-api-token-secret"
 VERIFY_URL = f"{API_BASE}/accounts/acc/tokens/verify"
 SEARCH_URL = f"{API_BASE}/accounts/acc/ai/models/search"
+SCHEMA_URL = f"{API_BASE}/accounts/acc/ai/models/schema"
 
 
 async def test_setup_and_unload(
@@ -241,4 +243,25 @@ async def test_issues_removed_with_entry(
     await hass.config_entries.async_remove(mock_config_entry.entry_id)
     await hass.async_block_till_done()
 
+    assert _issue(hass, mock_config_entry, "tts") is None
+
+
+async def test_no_issue_for_listed_model_when_schema_fails(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    aioclient_mock: AiohttpClientMocker,
+) -> None:
+    """A model listed by the search is not reported after a schema error."""
+    aioclient_mock.get(VERIFY_URL, json=load_fixture("verify_ok.json"))
+    aioclient_mock.get(
+        f"{SEARCH_URL}?task={TASK_ASR}", json=load_fixture("models_search_asr.json")
+    )
+    aioclient_mock.get(
+        f"{SEARCH_URL}?task={TASK_TTS}", json=load_fixture("models_search_tts.json")
+    )
+    aioclient_mock.get(re.compile(re.escape(SCHEMA_URL)), status=500)
+    mock_config_entry.add_to_hass(hass)
+    await _setup(hass, mock_config_entry, {CONF_TTS_MODEL: "@cf/deepgram/aura-2-en"})
+
+    assert mock_config_entry.runtime_data.catalog.discovered is True
     assert _issue(hass, mock_config_entry, "tts") is None

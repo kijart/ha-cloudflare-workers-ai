@@ -91,14 +91,15 @@ async def _family_models(
     return _ordered(found, default)
 
 
-async def _voices(client: CloudflareClient, model: str) -> list[str] | None:
+async def _voices(client: CloudflareClient, model: str) -> list[str]:
+    fallback = list(FALLBACK_AURA_2_ES_VOICES) if model == DEFAULT_TTS_MODEL else []
     try:
         schema = await client.get_input_schema(model)
         voices = schema["properties"]["speaker"]["enum"]
     except CloudflareError, KeyError, TypeError:
-        return list(FALLBACK_AURA_2_ES_VOICES) if model == DEFAULT_TTS_MODEL else None
+        return fallback
     if not isinstance(voices, list) or not voices:
-        return None
+        return fallback
     return [str(voice) for voice in voices]
 
 
@@ -108,17 +109,14 @@ async def async_discover(client: CloudflareClient) -> ModelCatalog:
     try:
         stt_models = await _family_models(client, asr, DEFAULT_STT_MODEL)
         tts_models = await _family_models(client, tts, DEFAULT_TTS_MODEL)
-        voices: dict[str, list[str]] = {}
-        for model in tts_models:
-            if (model_voices := await _voices(client, model)) is not None:
-                voices[model] = model_voices
+        voices = {model: await _voices(client, model) for model in tts_models}
     except CloudflareError:
         return fallback_catalog()
-    if not stt_models or not voices:
+    if not stt_models or not tts_models:
         return fallback_catalog()
     return ModelCatalog(
         stt_models=stt_models,
-        tts_models=list(voices),
+        tts_models=tts_models,
         voices=voices,
         discovered=True,
     )

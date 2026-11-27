@@ -110,33 +110,53 @@ async def test_discover_filters_and_reads_voices(
     assert set(catalog.voices) == set(catalog.tts_models)
 
 
-async def test_discover_schema_failure_uses_fallback_only_for_aura_2_es(
+async def test_discover_schema_failure_keeps_listed_models(
     hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
 ) -> None:
-    """A failing schema keeps aura-2-es with fallback voices and drops others."""
+    """A listed model stays when its schema fails, with fallback or no voices."""
     _mock_search(aioclient_mock)
     _mock_schema(aioclient_mock, AURA_ES, status=500)
     _mock_schema(aioclient_mock, AURA_EN, status=500)
     _mock_schema(aioclient_mock, AURA_1, json={"success": True, "result": {}})
     catalog = await async_discover(_client(hass))
     assert catalog.discovered is True
-    assert catalog.tts_models == [AURA_ES]
-    assert catalog.voices == {AURA_ES: list(FALLBACK_AURA_2_ES_VOICES)}
+    assert catalog.tts_models == [AURA_ES, AURA_1, AURA_EN]
+    assert catalog.voices == {
+        AURA_ES: list(FALLBACK_AURA_2_ES_VOICES),
+        AURA_1: [],
+        AURA_EN: [],
+    }
 
 
-async def test_discover_without_usable_models_falls_back(
+async def test_discover_empty_speaker_enum_keeps_model(
     hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
 ) -> None:
-    """No STT models or no usable TTS model yields the fallback catalog."""
-    # aura-2-es keeps its fallback voices, so drop it from the search result
-    tts_without_es = {
-        **TTS_BODY,
-        "result": [m for m in TTS_BODY["result"] if m["name"] != AURA_ES],
-    }
-    aioclient_mock.get(f"{SEARCH_URL}?task={TASK_ASR}", json=ASR_BODY)
-    aioclient_mock.get(f"{SEARCH_URL}?task={TASK_TTS}", json=tts_without_es)
-    for model in (AURA_EN, AURA_1):
+    """An empty speaker list does not drop the model."""
+    _mock_search(aioclient_mock)
+    _mock_schema(aioclient_mock, AURA_ES, json=SCHEMA_BODY)
+    _mock_schema(aioclient_mock, AURA_EN, json=_schema_with_voices([]))
+    _mock_schema(aioclient_mock, AURA_1, json=SCHEMA_BODY)
+    catalog = await async_discover(_client(hass))
+    assert AURA_EN in catalog.tts_models
+    assert catalog.voices[AURA_EN] == []
+
+
+async def test_discover_without_stt_or_tts_models_falls_back(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """No listed STT model or no listed TTS model yields the fallback catalog."""
+    aioclient_mock.get(
+        f"{SEARCH_URL}?task={TASK_ASR}", json={"success": True, "result": []}
+    )
+    aioclient_mock.get(f"{SEARCH_URL}?task={TASK_TTS}", json=TTS_BODY)
+    for model in (AURA_ES, AURA_EN, AURA_1):
         _mock_schema(aioclient_mock, model, status=500)
+    assert await async_discover(_client(hass)) == fallback_catalog()
+    aioclient_mock.clear_requests()
+    aioclient_mock.get(f"{SEARCH_URL}?task={TASK_ASR}", json=ASR_BODY)
+    aioclient_mock.get(
+        f"{SEARCH_URL}?task={TASK_TTS}", json={"success": True, "result": []}
+    )
     assert await async_discover(_client(hass)) == fallback_catalog()
 
 
