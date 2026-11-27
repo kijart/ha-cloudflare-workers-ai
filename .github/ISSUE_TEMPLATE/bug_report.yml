@@ -1,0 +1,87 @@
+name: Bug report
+description: Something shows wrongly or doesn't work.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Security problems are reported privately instead: see the [security policy](https://github.com/kijart/ha-cloudflare-workers-ai/security/policy).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What the integration does, and what was expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the Assist pipeline settings
+        2. Select Cloudflare Workers AI as the speech-to-text engine
+        3. …
+    validations:
+      required: true
+  - type: input
+    id: integration-version
+    attributes:
+      label: Integration version
+      description: Shown in HACS, or in the `version` field of `manifest.json`.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: ha-version
+    attributes:
+      label: Home Assistant version
+      description: Shown in Settings → About.
+      placeholder: "2026.11.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Installed from
+      options:
+        - HACS
+        - Manual
+    validations:
+      required: true
+  - type: input
+    id: models
+    attributes:
+      label: STT and TTS models
+      description: The speech-to-text and text-to-speech models in use, as shown in the integration options.
+      placeholder: "@cf/openai/whisper-large-v3-turbo, @cf/deepgram/aura-2-es"
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: The file downloaded from the integration page (Download diagnostics). Drag the file here to attach it. The API token, gateway token and Account ID are redacted in it.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Debug logs
+      description: |
+        Logs captured with debug logging enabled for the integration:
+
+        ```yaml
+        logger:
+          logs:
+            custom_components.cloudflare_workers_ai: debug
+        ```
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I have read [CONTRIBUTING.md](https://github.com/kijart/ha-cloudflare-workers-ai/blob/main/CONTRIBUTING.md), this is not a security problem, and it happens with the latest release.
+          required: true
