@@ -13,8 +13,10 @@
 
 <p align="center">
   <img alt="Home Assistant 2026.10.4+" src="https://img.shields.io/badge/Home%20Assistant-2026.10.4%2B-blue">
+  <a href="https://hacs.xyz/docs/faq/custom_repositories/"><img alt="HACS: Custom" src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg"></a>
   <a href="https://github.com/kijart/ha-cloudflare-workers-ai/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/kijart/ha-cloudflare-workers-ai"></a>
   <a href="https://github.com/kijart/ha-cloudflare-workers-ai/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/kijart/ha-cloudflare-workers-ai/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/kijart/ha-cloudflare-workers-ai/actions/workflows/release-please.yml"><img alt="Release please" src="https://github.com/kijart/ha-cloudflare-workers-ai/actions/workflows/release-please.yml/badge.svg"></a>
   <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green">
 </p>
 
