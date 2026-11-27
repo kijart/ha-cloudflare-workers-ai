@@ -21,6 +21,12 @@
 - **Home Assistant practices** — config flow with reauthentication and reconfiguration, diagnostics with the credentials redacted, and translated errors.
 - **English and Spanish** user interface.
 
+## Use cases
+
+- **Voice assistant without AI hardware:** Assist on voice satellites or the mobile app, with transcription and speech in the cloud instead of on a small Home Assistant host.
+- **Spanish voice control:** `aura-2-es` voices and Whisper in Spanish, with an initial prompt that lists room and device names.
+- **Announcements:** `tts.speak` on any media player, for example for reminders or alerts from automations.
+
 ## Requirements
 
 - Home Assistant 2026.10.4 or later.
@@ -73,7 +79,9 @@ Options (**Configure**):
 | Text-to-speech model  | Aura models in the catalog (`@cf/deepgram/aura-2-es`, `aura-2-en`, `aura-1`) · default `@cf/deepgram/aura-2-es`   |
 | Voice                 | Voices of the selected Aura model · default `aquila`                                                              |
 
-The model and voice lists are fetched from Cloudflare when the entry is set up and each time **Configure** opens. If that fails, the defaults are offered and the saved settings keep working. The token and AI Gateway settings are changed with **Reconfigure**, without deleting the entry.
+### How data is updated
+
+Nothing is polled. Speech-to-text and text-to-speech call Cloudflare only when Assist or an action needs them, one request each. The model and voice catalog is fetched when the entry is set up (at startup, on reload and after saving the options) and each time **Configure** opens. If that fails, the defaults are offered and the saved settings keep working. The token and AI Gateway settings are changed with **Reconfigure**, without deleting the entry.
 
 ## Costs and quota
 
@@ -108,7 +116,7 @@ The plan is shown in the Cloudflare dashboard under **Workers & Pages → Plans*
 
 - **Daily quota exhausted:** speech-to-text returns no result and text-to-speech fails with "The Cloudflare Workers AI daily quota is exhausted". A warning is logged once per UTC day, the entities stay available and requests work again after 00:00 UTC. No reauthentication is needed.
 - **Reauthentication required:** the token was rejected (expired, revoked, or blocked by its IP filter after the public IP changed). Open the reauthentication prompt in **Settings → Devices & services** and enter a new token, or fix the IP filter in Cloudflare and reload the entry. See [docs/token.md](docs/token.md).
-- **Configured model is no longer available:** a repair issue appears when Cloudflare retires the selected model. Choose another model in **Configure**.
+- **Configured model is no longer available:** a repair issue appears when the catalog fetched at setup (startup, reload or saving the options) no longer lists the selected model. Choose another model in **Configure**; saving reloads the entry and clears the issue.
 - **Only the default models are offered:** the catalog could not be fetched. The saved models keep working; open **Configure** again later.
 - **More detail:** enable debug logging for the integration from its entry, or download its diagnostics, which redact the credentials.
 
