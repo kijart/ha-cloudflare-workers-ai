@@ -22,3 +22,9 @@ The release pull request, the tag and the release are created with a GitHub App 
    - secret `RELEASE_APP_PRIVATE_KEY`: the contents of the `.pem` private key
 
 Actions are pinned to commit SHAs; Dependabot opens a weekly pull request to update them.
+
+## HACS validation
+
+The HACS job ignores the `brands` check, because the integration is not yet in [home-assistant/brands](https://github.com/home-assistant/brands). Remove `ignore: brands` from `.github/workflows/ci.yml` once the icon is submitted there.
+
+The same job checks the repository settings: the GitHub repository needs a description and topics (for example `home-assistant`, `hacs`, `cloudflare`, `stt`, `tts`), or the check fails.
