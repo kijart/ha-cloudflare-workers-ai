@@ -14,6 +14,7 @@ from custom_components.cloudflare_workers_ai.api import (
     CloudflareClient,
     CloudflareConnectionError,
     CloudflareError,
+    CloudflareGatewayAuthError,
     CloudflareQuotaError,
     CloudflareResponseError,
 )
@@ -221,7 +222,32 @@ async def test_token_never_in_exception_text(
         status=401,
         json=AUTH_ERROR_BODY,
     )
-    with pytest.raises(CloudflareAuthError) as err:
+    with pytest.raises(CloudflareGatewayAuthError) as err:
         await client.run_json(STT_MODEL, {})
     assert API_TOKEN not in str(err.value)
     assert "gateway-secret-value" not in str(err.value)
+
+
+@pytest.mark.parametrize("status", [401, 403])
+async def test_gateway_auth_error_is_distinct(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, status: int
+) -> None:
+    """An auth failure of a gateway request is not an API token failure."""
+    aioclient_mock.post(
+        f"{GATEWAY_BASE}/acc/gw/workers-ai/{STT_MODEL}",
+        status=status,
+        json=AUTH_ERROR_BODY,
+    )
+    client = _client(hass, gateway_id="gw", gateway_token="gt")
+    with pytest.raises(CloudflareGatewayAuthError) as err:
+        await client.run_json(STT_MODEL, {})
+    assert not isinstance(err.value, CloudflareAuthError)
+
+
+async def test_direct_auth_error_stays_api_auth_error(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """Without a gateway the same failure is an API token failure."""
+    aioclient_mock.post(RUN_URL, status=401, json=AUTH_ERROR_BODY)
+    with pytest.raises(CloudflareAuthError):
+        await _client(hass).run_json(STT_MODEL, {})

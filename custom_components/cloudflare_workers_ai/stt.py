@@ -21,7 +21,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import CloudflareWorkersAIConfigEntry
-from .api import CloudflareAuthError, CloudflareError, CloudflareQuotaError
+from .api import (
+    CloudflareAuthError,
+    CloudflareError,
+    CloudflareGatewayAuthError,
+    CloudflareQuotaError,
+)
 from .const import (
     CONF_STT_MODEL,
     CONF_STT_PROMPT,
@@ -33,7 +38,7 @@ from .const import (
     STT_SAMPLE_WIDTH_BYTES,
     WHISPER_LANGUAGES,
 )
-from .entity import CloudflareWorkersAIEntity, warn_quota_once
+from .entity import GATEWAY_REJECTED_MESSAGE, CloudflareWorkersAIEntity, warn_quota_once
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -129,6 +134,9 @@ class CloudflareSTTEntity(CloudflareWorkersAIEntity, SpeechToTextEntity):
             )
         except CloudflareAuthError:
             self._entry.async_start_reauth(self.hass)
+            return _ERROR
+        except CloudflareGatewayAuthError:
+            _LOGGER.warning(GATEWAY_REJECTED_MESSAGE)
             return _ERROR
         except CloudflareQuotaError:
             warn_quota_once(data, _LOGGER)

@@ -18,6 +18,7 @@ from custom_components.cloudflare_workers_ai.const import (
     CONF_STT_PROMPT,
     DEFAULT_STT_MODEL,
     DOMAIN,
+    GATEWAY_BASE,
     MAX_STT_AUDIO_BYTES,
     STT_BYTES_PER_SECOND,
 )
@@ -40,6 +41,7 @@ from homeassistant.helpers import entity_registry as er
 
 FIXTURES = Path(__file__).parent / "fixtures"
 API_TOKEN = "test-api-token-secret"
+GATEWAY_TOKEN = "test-gateway-token-secret"
 PLATFORMS = "custom_components.cloudflare_workers_ai.PLATFORMS"
 RUN_URL = f"{API_BASE}/accounts/acc/ai/run/{DEFAULT_STT_MODEL}"
 METADATA = SpeechMetadata(
@@ -252,3 +254,27 @@ async def test_stt_entity_metadata(
 def load_fixture(name: str) -> Any:
     """Load a JSON fixture."""
     return json.loads((FIXTURES / name).read_text())
+
+
+async def test_stt_gateway_auth_error_warns_without_reauth(
+    hass: HomeAssistant,
+    gateway_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A rejected gateway returns an error, warns and does not start reauth."""
+    entity = await _setup(hass, gateway_config_entry)
+    mock_cloudflare.post(
+        f"{GATEWAY_BASE}/acc/gw/workers-ai/{DEFAULT_STT_MODEL}",
+        status=401,
+        json=load_fixture("error_auth.json"),
+    )
+    caplog.set_level(logging.WARNING)
+    result = await entity.async_process_audio_stream(METADATA, _stream(_pcm(1)))
+    await hass.async_block_till_done()
+    assert result == SpeechResult(None, SpeechResultState.ERROR)
+    assert "AI Gateway rejected the request" in caplog.text
+    assert GATEWAY_TOKEN not in caplog.text
+    assert API_TOKEN not in caplog.text
+    flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
+    assert not any(flow["context"]["source"] == "reauth" for flow in flows)

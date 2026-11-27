@@ -95,7 +95,7 @@ async def test_user_flow_gateway_id_required_when_enabled(
 async def test_user_flow_with_gateway(
     hass: HomeAssistant, mock_cloudflare: AiohttpClientMocker
 ) -> None:
-    """Gateway fields are stored and used for the verification request."""
+    """Gateway fields are stored; verification only checks the API token."""
     data = {
         **USER_INPUT,
         CONF_USE_GATEWAY: True,

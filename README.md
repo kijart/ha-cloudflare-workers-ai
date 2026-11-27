@@ -70,6 +70,8 @@ Setup fields:
 | Gateway ID      | Name of the AI Gateway; required when AI Gateway is on                                     |
 | Gateway token   | Token of an authenticated gateway; empty for a gateway without authentication              |
 
+Only the API token is verified at setup. The gateway ID and token are not checked until the first request that goes through the gateway; see Troubleshooting if it is rejected.
+
 Options (**Configure**):
 
 | Option                | Values                                                                                                            |
@@ -115,6 +117,7 @@ The plan is shown in the Cloudflare dashboard under **Workers & Pages → Plans*
 ## Troubleshooting
 
 - **Daily quota exhausted:** speech-to-text returns no result and text-to-speech fails with "The Cloudflare Workers AI daily quota is exhausted". A warning is logged once per UTC day, the entities stay available and requests work again after 00:00 UTC. No reauthentication is needed.
+- **AI Gateway rejected the request:** the gateway ID and token are not verified at setup, because only the API token is checked. A wrong gateway ID or token shows up when speech-to-text or text-to-speech is first used: speech-to-text logs a warning and returns no result, and text-to-speech fails with "The AI Gateway rejected the request". No reauthentication is started, as the API token is not the cause. Open **Reconfigure** in **Settings → Devices & services** and correct the gateway ID and token.
 - **Reauthentication required:** the token was rejected (expired, revoked, or blocked by its IP filter after the public IP changed). Open the reauthentication prompt in **Settings → Devices & services** and enter a new token, or fix the IP filter in Cloudflare and reload the entry. See [docs/token.md](docs/token.md).
 - **Configured model is no longer available:** a repair issue appears when the catalog fetched at setup (startup, reload or saving the options) no longer lists the selected model. Choose another model in **Configure**; saving reloads the entry and clears the issue.
 - **Only the default models are offered:** the catalog could not be fetched. The saved models keep working; open **Configure** again later.

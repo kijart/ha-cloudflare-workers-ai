@@ -101,6 +101,9 @@
     },
     "tts_failed": {
       "message": "Falló la síntesis de voz. Consultar los registros para más detalles."
+    },
+    "gateway_auth_failed": {
+      "message": "AI Gateway rechazó la solicitud. Comprobar el ID y el token del gateway con Reconfigurar."
     }
   },
   "issues": {

@@ -23,6 +23,10 @@ class CloudflareAuthError(CloudflareError):
     """The token was rejected."""
 
 
+class CloudflareGatewayAuthError(CloudflareError):
+    """The AI Gateway rejected the request."""
+
+
 class CloudflareConnectionError(CloudflareError):
     """Network failure, timeout or server error."""
 
@@ -58,7 +62,7 @@ def _describe(status: int, errors: list[dict[str, Any]]) -> str:
     )
 
 
-def _raise_for_error(status: int, body: Any) -> None:
+def _raise_for_error(status: int, body: Any, *, via_gateway: bool) -> None:
     errors = _errors(body)
     codes = {error.get("code") for error in errors}
     message = _describe(status, errors)
@@ -68,6 +72,8 @@ def _raise_for_error(status: int, body: Any) -> None:
         status in (HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN)
         or codes & AUTH_ERROR_CODES
     ):
+        if via_gateway:
+            raise CloudflareGatewayAuthError(message)
         raise CloudflareAuthError(message)
     if status >= HTTPStatus.INTERNAL_SERVER_ERROR:
         raise CloudflareConnectionError(message)
@@ -127,7 +133,9 @@ class CloudflareClient:
             ) as response:
                 body = await response.read()
                 if response.status >= HTTPStatus.BAD_REQUEST:
-                    _raise_for_error(response.status, _parse_json(body))
+                    _raise_for_error(
+                        response.status, _parse_json(body), via_gateway=via_gateway
+                    )
                 return body, response.headers.get("Content-Type", "")
         except TimeoutError as err:
             raise CloudflareConnectionError("Request to Cloudflare timed out") from err

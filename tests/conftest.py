@@ -11,6 +11,8 @@ from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClien
 from custom_components.cloudflare_workers_ai.const import (
     API_BASE,
     CONF_ACCOUNT_ID,
+    CONF_GATEWAY_ID,
+    CONF_GATEWAY_TOKEN,
     CONF_USE_GATEWAY,
     DOMAIN,
 )
@@ -64,3 +66,23 @@ def mock_cloudflare(aioclient_mock: AiohttpClientMocker) -> AiohttpClientMocker:
         re.compile(re.escape(SCHEMA_URL)), json=load_fixture("schema_aura_2_es.json")
     )
     return aioclient_mock
+
+
+GATEWAY_TOKEN = "test-gateway-token-secret"
+
+
+@pytest.fixture
+def gateway_config_entry() -> MockConfigEntry:
+    """Return a config entry for account "acc" that uses AI Gateway "gw"."""
+    return MockConfigEntry(
+        domain=DOMAIN,
+        title="Cloudflare Workers AI",
+        unique_id="acc",
+        data={
+            CONF_ACCOUNT_ID: "acc",
+            CONF_API_TOKEN: API_TOKEN,
+            CONF_USE_GATEWAY: True,
+            CONF_GATEWAY_ID: "gw",
+            CONF_GATEWAY_TOKEN: GATEWAY_TOKEN,
+        },
+    )

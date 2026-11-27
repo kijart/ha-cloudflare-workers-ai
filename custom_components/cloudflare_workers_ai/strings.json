@@ -101,6 +101,9 @@
     },
     "tts_failed": {
       "message": "Text-to-speech failed. Check the logs for details."
+    },
+    "gateway_auth_failed": {
+      "message": "The AI Gateway rejected the request. Check the gateway ID and token with Reconfigure."
     }
   },
   "issues": {

@@ -16,6 +16,7 @@ from custom_components.cloudflare_workers_ai.const import (
     DEFAULT_TTS_MODEL,
     DEFAULT_TTS_VOICE,
     DOMAIN,
+    GATEWAY_BASE,
     MAX_TTS_CHARS,
 )
 from custom_components.cloudflare_workers_ai.models import FALLBACK_AURA_2_ES_VOICES
@@ -30,6 +31,7 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 
 FIXTURES = Path(__file__).parent / "fixtures"
 API_TOKEN = "test-api-token-secret"
+GATEWAY_TOKEN = "test-gateway-token-secret"
 RUN_URL = f"{API_BASE}/accounts/acc/ai/run/{DEFAULT_TTS_MODEL}"
 MP3 = {"Content-Type": "audio/mpeg"}
 QUOTA_BODY = {
@@ -306,3 +308,26 @@ async def test_tts_default_options_use_default_voice(
     """Without a configured voice the default voice is the default option."""
     entity = await _setup(hass, mock_config_entry)
     assert entity.default_options == {ATTR_VOICE: DEFAULT_TTS_VOICE}
+
+
+async def test_tts_gateway_auth_error_raises_without_reauth(
+    hass: HomeAssistant,
+    gateway_config_entry: MockConfigEntry,
+    mock_cloudflare: AiohttpClientMocker,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A rejected gateway raises a dedicated error and does not start reauth."""
+    entity = await _setup(hass, gateway_config_entry)
+    mock_cloudflare.post(
+        f"{GATEWAY_BASE}/acc/gw/workers-ai/{DEFAULT_TTS_MODEL}",
+        status=403,
+        json=load_fixture("error_auth.json"),
+    )
+    with pytest.raises(HomeAssistantError) as err:
+        await entity.async_get_tts_audio("Hola", "es", {})
+    assert err.value.translation_key == "gateway_auth_failed"
+    assert err.value.translation_domain == DOMAIN
+    assert GATEWAY_TOKEN not in caplog.text
+    await hass.async_block_till_done()
+    flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
+    assert not any(flow["context"]["source"] == "reauth" for flow in flows)

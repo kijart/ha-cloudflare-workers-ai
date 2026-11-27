@@ -10,6 +10,10 @@ from homeassistant.util import dt as dt_util
 from . import CloudflareWorkersAIConfigEntry, CloudflareWorkersAIData
 from .const import DOMAIN
 
+GATEWAY_REJECTED_MESSAGE = (
+    "AI Gateway rejected the request; check the gateway ID and token with Reconfigure"
+)
+
 
 class CloudflareWorkersAIEntity(Entity):
     """Base class of the Cloudflare Workers AI entities."""

@@ -10,7 +10,12 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import CloudflareWorkersAIConfigEntry
-from .api import CloudflareAuthError, CloudflareError, CloudflareQuotaError
+from .api import (
+    CloudflareAuthError,
+    CloudflareError,
+    CloudflareGatewayAuthError,
+    CloudflareQuotaError,
+)
 from .const import (
     CONF_TTS_MODEL,
     CONF_TTS_VOICE,
@@ -19,7 +24,7 @@ from .const import (
     DOMAIN,
     MAX_TTS_CHARS,
 )
-from .entity import CloudflareWorkersAIEntity, warn_quota_once
+from .entity import GATEWAY_REJECTED_MESSAGE, CloudflareWorkersAIEntity, warn_quota_once
 from .models import FALLBACK_AURA_2_ES_VOICES, tts_language
 
 _LOGGER = logging.getLogger(__name__)
@@ -104,6 +109,11 @@ class CloudflareTTSEntity(CloudflareWorkersAIEntity, TextToSpeechEntity):
         except CloudflareAuthError as err:
             self._entry.async_start_reauth(self.hass)
             raise _failed() from err
+        except CloudflareGatewayAuthError as err:
+            _LOGGER.warning(GATEWAY_REJECTED_MESSAGE)
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="gateway_auth_failed"
+            ) from err
         except CloudflareQuotaError as err:
             warn_quota_once(data, _LOGGER)
             raise HomeAssistantError(
